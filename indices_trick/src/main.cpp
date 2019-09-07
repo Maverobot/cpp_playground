@@ -3,10 +3,9 @@
 #include <iterator>
 #include <tuple>
 
-// The header for all the magic
-#include <utility>
-
 #include <indices_trick_own.h>
+
+#include <indices_trick_std.h>
 
 // Make std::array printable with std::cout
 template <class T, std::size_t N>
@@ -34,9 +33,13 @@ int main(int argc, char *argv[]) {
 
   std::cout << "Naive: " << arr << std::endl;
 
-  // A complex version of indices trick
+  // Indices trick with own indices builder
   auto res1 = indices_trick_own::execute_all(GetTypeSize{}, tup);
-  std::cout << "Complex: " << res1 << std::endl;
+  std::cout << "Indices trick with own indices builder: " << res1 << std::endl;
+
+  // Indices trick with std::make_index_sequence, std::index_sequence
+  auto res2 = indices_trick_std::execute_all(GetTypeSize{}, tup);
+  std::cout << "Indices trick with std header <utility>: " << res2 << std::endl;
 
   return 0;
 }
