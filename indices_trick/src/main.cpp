@@ -18,7 +18,7 @@ std::ostream &operator<<(std::ostream &o, const std::array<T, N> &arr) {
  * std::array
  */
 template <typename T> int f(T) { return sizeof(T); }
-std::tuple<int, char, double> tup{42, 'a', 1.99};
+std::tuple<int, char, float, double> tup{42, 'a', 0.99, 1.99};
 
 /**
  * Indices trick (a detailed solution)
@@ -27,35 +27,33 @@ template <std::size_t... Is> struct Indices {};
 template <typename Tuple, typename std::size_t... Is>
 std::array<int, sizeof...(Is)> f_all_dispatch(Tuple &&t, Indices<Is...>) {
   return std::array<int, sizeof...(Is)>{
-      {f(std::get<Is>(std::forward<Tuple>(t))...)}};
+      {f(std::get<Is>(std::forward<Tuple>(t)))...}};
 };
-
 // Indices builder
 template <std::size_t N, std::size_t... Is> struct build_indices {
-  typedef typename build_indices<N - 1, N, Is...>::type type;
+  using type = typename build_indices<N - 1, N - 1, Is...>::type;
 };
 template <std::size_t... Is> struct build_indices<0, Is...> {
-  typedef Indices<0, Is...> type;
+  using type = Indices<Is...>;
 };
 
+// TODO: Bare might not be needed
 template <typename T>
 using Bare =
     typename std::remove_cv<typename std::remove_reference<T>::type>::type;
-
 template <typename Tuple>
 using IndicesFor =
     typename build_indices<std::tuple_size<Bare<Tuple>>::value>::type;
-
 template <typename Tuple>
-std::array<int, std::tuple_size<Tuple>::value> f_all(Tuple t) {
+std::array<int, std::tuple_size<Tuple>::value> f_all(Tuple &t) {
   return f_all_dispatch(t, IndicesFor<Tuple>());
 }
 
 int main(int argc, char *argv[]) {
 
   // Naive implementation with brute force
-  std::array<int, 3> arr{f(std::get<0>(tup)), f(std::get<1>(tup)),
-                         f(std::get<2>(tup))};
+  std::array<int, 4> arr{f(std::get<0>(tup)), f(std::get<1>(tup)),
+                         f(std::get<2>(tup)), f(std::get<3>(tup))};
 
   std::cout << "Naive: " << arr << std::endl;
 
