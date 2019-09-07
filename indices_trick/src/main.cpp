@@ -36,16 +36,10 @@ template <std::size_t N, std::size_t... Is> struct build_indices {
 template <std::size_t... Is> struct build_indices<0, Is...> {
   using type = Indices<Is...>;
 };
-
-// TODO: Bare might not be needed
-template <typename T>
-using Bare =
-    typename std::remove_cv<typename std::remove_reference<T>::type>::type;
 template <typename Tuple>
-using IndicesFor =
-    typename build_indices<std::tuple_size<Bare<Tuple>>::value>::type;
+using IndicesFor = typename build_indices<std::tuple_size<Tuple>::value>::type;
 template <typename Tuple>
-std::array<int, std::tuple_size<Tuple>::value> f_all(Tuple &t) {
+std::array<int, std::tuple_size<Tuple>::value> f_all(const Tuple &t) {
   return f_all_dispatch(t, IndicesFor<Tuple>());
 }
 
