@@ -1,7 +1,5 @@
-# conan\_cmake\_example
-
-Reference link: https://git.rwth-aachen.de/tim.uebelhoer/catkin-conan/blob/master/README.md
-
+# conan\_catkin\_example
+Follow these steps to build the project,
 * Install conan
 ```
 $ pip install --user conan
@@ -19,11 +17,8 @@ $ mkdir build && cd build
 $ conan install ..
 ```
 
-* Build ROS workspace with conan
+* Build project with cmake
 ```
-catkin_make_isolated --cmake-args -DCMAKE_BUILD_TYPE=Release
-```
-or
-```
-catkin build --cmake-args -DCMAKE_BUILD_TYPE=Release
+$ cmake .. -DCMAKE_BUILD_TYPE=Release
+$ cmake --build .
 ```
