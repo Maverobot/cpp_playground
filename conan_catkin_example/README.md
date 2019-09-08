@@ -1,5 +1,7 @@
 # conan\_catkin\_example
-Follow these steps to build the project,
+
+Reference link: https://git.rwth-aachen.de/tim.uebelhoer/catkin-conan/blob/master/README.md
+
 * Install conan
 ```
 $ pip install --user conan
@@ -11,14 +13,12 @@ $ conan profile new default --detect  # Generates default profile detecting GCC 
 $ conan profile update settings.compiler.libcxx=libstdc++11 default  # Sets libcxx to C++11 ABI
 
 ```
-* Configure conan for this project
-```
-$ mkdir build && cd build
-$ conan install ..
-```
 
-* Build project with cmake
+* Build ROS workspace with conan
 ```
-$ cmake .. -DCMAKE_BUILD_TYPE=Release
-$ cmake --build .
+catkin_make_isolated --cmake-args -DCMAKE_BUILD_TYPE=Release
+```
+or
+```
+catkin build --cmake-args -DCMAKE_BUILD_TYPE=Release
 ```
