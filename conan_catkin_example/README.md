@@ -16,9 +16,5 @@ $ conan profile update settings.compiler.libcxx=libstdc++11 default  # Sets libc
 
 * Build ROS workspace with conan
 ```
-catkin_make_isolated --cmake-args -DCMAKE_BUILD_TYPE=Release
-```
-or
-```
-catkin build --cmake-args -DCMAKE_BUILD_TYPE=Release
+catkin_make -DCMAKE_BUILD_TYPE=Release
 ```
