@@ -9,14 +9,11 @@ $ pip install --user conan
 ```
 $ conan profile new default --detect  # Generates default profile detecting GCC and sets old ABI
 $ conan profile update settings.compiler.libcxx=libstdc++11 default  # Sets libcxx to C++11 ABI
-
 ```
-* Configure conan for this project
+* Add dlib conan repo as remote
 ```
-$ mkdir build && cd build
-$ conan install ..
+conan remote add <REMOTE> https://api.bintray.com/conan/omaralvarez/public-conan
 ```
-
 * Build project with cmake
 ```
 $ cmake .. -DCMAKE_BUILD_TYPE=Release
