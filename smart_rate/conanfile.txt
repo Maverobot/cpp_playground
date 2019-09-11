@@ -1,0 +1,5 @@
+[requires]
+dlib/19.16.0@omaralvarez/stable
+
+[generators]
+cmake
