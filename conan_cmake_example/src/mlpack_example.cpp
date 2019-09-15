@@ -21,6 +21,7 @@ void GenerateNoisySines(arma::cube &data, arma::mat &labels,
   for (size_t seq = 0; seq < num_sequences; seq++) {
     // Adds noise to y1
     arma::vec sequence = addNoise(y1);
+    std::cout << "seq_1: " << sequence << std::endl;
     for (size_t i = 0; i < num_points; ++i) {
       data(0, seq, i) = sequence[i];
     }
@@ -28,6 +29,7 @@ void GenerateNoisySines(arma::cube &data, arma::mat &labels,
 
     // Adds noise to y2
     sequence = addNoise(y2);
+    std::cout << "seq_2: " << sequence << std::endl;
     for (size_t i = 0; i < num_points; ++i) {
       data(0, num_sequences + seq, i) = sequence[i];
     }
@@ -43,11 +45,11 @@ using namespace mlpack;
 
 int main(int argc, char *argv[]) {
   size_t successes = 0;
-  const size_t rho = 3;
+  const size_t rho = 4;
 
   arma::cube input;
   arma::mat labelsTemp;
-  GenerateNoisySines(input, labelsTemp, rho, 6);
+  GenerateNoisySines(input, labelsTemp, rho, 5);
 
   arma::cube labels = arma::zeros<arma::cube>(1, labelsTemp.n_cols, rho);
   for (size_t i = 0; i < labelsTemp.n_cols; ++i) {
