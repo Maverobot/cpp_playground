@@ -2,33 +2,35 @@
 #include <mlpack/methods/ann/ffn.hpp>
 #include <mlpack/methods/ann/rnn.hpp>
 
+arma::vec addNoise(const arma::vec &sequence, const double noise = 0.3) {
+  return arma::randu(sequence.size()) * noise + sequence +
+         arma::as_scalar(arma::randu(1) - 0.5) * noise;
+}
+
 void GenerateNoisySines(arma::cube &data, arma::mat &labels,
                         const size_t num_points, const size_t num_sequences,
                         const double noise = 0.3) {
   arma::colvec x = arma::linspace<arma::colvec>(0, num_points - 1, num_points) /
                    num_points * 20.0;
-  std::cout << "x = " << x << std::endl;
   arma::colvec y1 = arma::sin(x + arma::as_scalar(arma::randu(1)) * 3.0);
   arma::colvec y2 = arma::sin(x / 2.0 + arma::as_scalar(arma::randu(1)) * 3.0);
-  std::cout << "y1 = " << y1 << std::endl;
-  std::cout << "y2 = " << y2 << std::endl;
 
   data = arma::zeros(1 /* single dimension */, num_sequences * 2, num_points);
   labels = arma::zeros(2 /* 2 classes */, num_sequences * 2);
 
   for (size_t seq = 0; seq < num_sequences; seq++) {
-    arma::vec sequence = arma::randu(num_points) * noise + y1 +
-                         arma::as_scalar(arma::randu(1) - 0.5) * noise;
-    for (size_t i = 0; i < num_points; ++i)
+    // Adds noise to y1
+    arma::vec sequence = addNoise(y1);
+    for (size_t i = 0; i < num_points; ++i) {
       data(0, seq, i) = sequence[i];
-
+    }
     labels(0, seq) = 1;
 
-    sequence = arma::randu(num_points) * noise + y2 +
-               arma::as_scalar(arma::randu(1) - 0.5) * noise;
-    for (size_t i = 0; i < num_points; ++i)
+    // Adds noise to y2
+    sequence = addNoise(y2);
+    for (size_t i = 0; i < num_points; ++i) {
       data(0, num_sequences + seq, i) = sequence[i];
-
+    }
     labels(1, num_sequences + seq) = 1;
   }
   std::cout << data << std::endl;
@@ -41,7 +43,7 @@ using namespace mlpack;
 
 int main(int argc, char *argv[]) {
   size_t successes = 0;
-  const size_t rho = 10;
+  const size_t rho = 3;
 
   arma::cube input;
   arma::mat labelsTemp;
