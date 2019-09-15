@@ -1,5 +1,6 @@
 [requires]
 dlib/19.16.0@omaralvarez/stable
+mlpack/3.1.0@darcamo/stable
 
 [generators]
 cmake

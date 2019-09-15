@@ -20,5 +20,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR} ${CMAKE_MODULE_PATH})
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()
 
-add_executable(conan_example src/main.cpp)
-target_link_libraries(conan_example ${CONAN_LIBS})
+add_executable(dlib_example src/dlib_example.cpp)
+target_link_libraries(dlib_example ${CONAN_LIBS})
+
+add_executable(mlpack_example src/mlpack_example.cpp)
+target_link_libraries(mlpack_example ${CONAN_LIBS})
