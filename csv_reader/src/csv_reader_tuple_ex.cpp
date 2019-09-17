@@ -12,10 +12,10 @@
 class LineParser {
 public:
   LineParser(const std::string &csv_line) : iss(csv_line) {}
-  template <typename T> T operator()(T &&) const { return parse_token<T>(iss); }
+  template <typename T> T operator()(T &&) { return parse_token<T>(iss); }
 
 private:
-  mutable std::istringstream iss;
+  std::istringstream iss;
 };
 
 struct SensorData {
