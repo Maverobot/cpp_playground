@@ -20,5 +20,5 @@ project(download-dlib)
 hunter_add_package(dlib)
 find_package(dlib CONFIG REQUIRED)
 
-add_executable(gui_api_ex src/gui_api_ex.cpp)
-target_link_libraries(gui_api_ex PUBLIC dlib::dlib)
+add_executable(dlib_gui_ex src/dlib_gui_ex.cpp)
+target_link_libraries(dlib_gui_ex PUBLIC dlib::dlib)
