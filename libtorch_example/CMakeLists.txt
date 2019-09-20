@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.4)
-project(smart_rate)
+project(libtorch_example)
 
 set(LIBTORCH_PATH "" CACHE PATH "Path to the decompressed libtorch folder.")
 
