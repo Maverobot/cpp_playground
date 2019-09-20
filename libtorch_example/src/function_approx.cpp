@@ -2,11 +2,11 @@
 #include <random>
 #include <torch/torch.h>
 
-std::tuple<std::vector<float>, std::vector<float>>
+std::pair<std::vector<double>, std::vector<double>>
 getTrainingData(double i_max = 1000000, double x_min = -M_PI,
                 double x_max = M_PI) {
-  std::vector<float> x(i_max);
-  std::vector<float> y(i_max);
+  std::vector<double> x(i_max);
+  std::vector<double> y(i_max);
 
   size_t i = 0;
   while (i < i_max) {
@@ -15,32 +15,38 @@ getTrainingData(double i_max = 1000000, double x_min = -M_PI,
     i++;
   }
 
-  return std::make_tuple(x, y);
+  return std::make_pair(x, y);
 };
 
 class OneDimMappingDataset : public torch::data::Dataset<OneDimMappingDataset> {
 private:
-  torch::Tensor states_, labels_;
+  std::vector<double> states_, labels_;
 
 public:
-  explicit OneDimMappingDataset(const std::string &loc_states,
-                                const std::string &loc_labels)
-      : states_(loc_states), labels_(loc_labels){};
-  torch::data::Example<> get(size_t index) override {
-    return {states_[index], labels_[index]};
+  explicit OneDimMappingDataset(const std::vector<double> &states,
+                                const std::vector<double> &labels)
+      : states_(states), labels_(labels) {
+    if (states.size() != labels.size()) {
+      throw std::invalid_argument(
+          "states and labels must have the same length.");
+    }
   };
+  torch::data::Example<> get(size_t index) override {
+    torch::Tensor state = torch::eye(1) * states_.at(index);
+    torch::Tensor label = torch::eye(1) * labels_.at(index);
+    return {state, label};
+  };
+
+  torch::optional<size_t> size() const override { return states_.size(); }
 };
 
 using namespace torch;
 
 int main(int argc, char *argv[]) {
 
-  const size_t data_size = train_x.size(0);
   const size_t epoch_size = 100;
-  const size_t batch_size = 1;
-  const int64_t batches_per_epoch =
-      std::ceil(data_size / static_cast<double>(batch_size));
-  const int64_t kLogInterval = 1000;
+  const size_t batch_size = 500;
+  const int64_t kLogInterval = 50;
   const int64_t kCheckpointEvery = 10000;
 
   // Use GPU when present, CPU otherwise.
@@ -51,29 +57,21 @@ int main(int argc, char *argv[]) {
   }
 
   // Get training data.
-  std::vector<float> train_x_raw;
-  std::vector<float> train_y_raw;
-  std::tie(train_x_raw, train_y_raw) = getTrainingData();
+  std::vector<double> train_x;
+  std::vector<double> train_y;
+  std::tie(train_x, train_y) = getTrainingData(100000);
 
-  // Shuffle training data.
-  auto rng = std::default_random_engine{};
-  std::shuffle(train_x_raw.begin(), train_x_raw.end(), rng);
-  std::shuffle(train_y_raw.begin(), train_y_raw.end(), rng);
-
-  // Create tensors based on the training data.
-  Backend b;
-  torch::Tensor train_x =
-      torch::from_blob(train_x_raw.data(), train_x_raw.size())
-          .toBackend(c10::Backend::CUDA);
-  torch::Tensor train_y =
-      torch::from_blob(train_y_raw.data(), train_y_raw.size())
-          .toBackend(c10::Backend::CUDA);
-  std::cout << "train_x size: " << train_x.size(0) << std::endl;
-  std::cout << "train_y size: " << train_y.size(0) << std::endl;
+  std::cout << "train_x size: " << train_x.size() << std::endl;
+  std::cout << "train_y size: " << train_y.size() << std::endl;
 
   // Generate a dataset
-  auto data_set = OneDimMappingDataset(loc_states, loc_labels)
+  auto data_set = OneDimMappingDataset(train_x, train_y)
                       .map(torch::data::transforms::Stack<>());
+
+  const size_t data_size = data_set.size().value();
+  const int64_t batches_per_epoch =
+      std::ceil(data_size / static_cast<double>(batch_size));
+  std::cout << "data size: " << data_size << std::endl;
 
   // Generate a data loader.
   auto data_loader =
@@ -98,35 +96,43 @@ int main(int argc, char *argv[]) {
   }
 
   size_t epoch_idx = 0;
-  size_t batch_index = 0;
   while (epoch_idx < epoch_size) {
-    for (auto &batch : data_loader) {
+    size_t batch_index = 0;
+    for (torch::data::Example<> &batch : *data_loader) {
       // Train discriminator with real images.
       func_approximator->zero_grad();
-      auto data = batch.data;
-      auto labels = batch.target;
+      auto data = batch.data.to(device);
+      // std::cout << data.to(TensorOptions().device(kCPU), false,
+      // true)
+      //           << std::endl;
+      auto labels = batch.target.to(device);
+
+      // std::cout << labels.to(TensorOptions().device(kCPU), false,
+      // true)
+      //           << std::endl;
 
       torch::Tensor real_output = func_approximator->forward(data);
       torch::Tensor d_loss_real = torch::mse_loss(real_output, labels);
       d_loss_real.backward();
+      optimizer.step();
 
       if (batch_index % kLogInterval == 0) {
         std::printf("\r[%2ld/%2ld][%3ld/%3ld] loss: %.4f \n", epoch_idx,
                     epoch_size, batch_index, batches_per_epoch,
-                    d_loss_real.item<float>());
+                    d_loss_real.item<double>());
         auto test_x = torch::randn(1) * M_PI;
         auto test_y =
             func_approximator->forward(test_x.toBackend(c10::Backend::CUDA));
-        std::printf("x = %.5f, target y = %.5f, predicted y = %.5f \n",
-                    test_x[0].item<float>(), std::cos(test_x[0].item<float>()),
-                    test_y[0].item<float>());
+        std::printf("x = %.5f, target y = %.5f, predicted y = %.5f\n ",
+                    test_x[0].item<double>(),
+                    std::cos(test_x[0].item<double>()),
+                    test_y[0].item<double>());
       }
 
       if (batch_index % kCheckpointEvery == 0) {
         // Checkpoint the model and optimizer state.
         torch::save(func_approximator, "cos-func-approx-checkpoint.pt");
       }
-
       batch_index++;
     }
     epoch_idx++;
