@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
 
   // Generate a data loader.
   auto data_loader =
-      torch::data::make_data_loader<torch::data::samplers::SequentialSampler>(
+      torch::data::make_data_loader<torch::data::samplers::RandomSampler>(
           std::move(data_set), batch_size);
 
   // Define network
