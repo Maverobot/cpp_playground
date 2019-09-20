@@ -3,8 +3,8 @@
 #include <torch/torch.h>
 
 std::pair<std::vector<double>, std::vector<double>>
-getTrainingData(double i_max = 1000000, double x_min = -M_PI,
-                double x_max = M_PI) {
+getTrainingData(double i_max = 10000000, double x_min = -3 * M_PI,
+                double x_max = 3 * M_PI) {
   std::vector<double> x(i_max);
   std::vector<double> y(i_max);
 
