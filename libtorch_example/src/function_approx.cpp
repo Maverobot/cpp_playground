@@ -18,9 +18,31 @@ getTrainingData(double i_max = 1000000, double x_min = -M_PI,
   return std::make_tuple(x, y);
 };
 
+class OneDimMappingDataset : public torch::data::Dataset<OneDimMappingDataset> {
+private:
+  torch::Tensor states_, labels_;
+
+public:
+  explicit OneDimMappingDataset(const std::string &loc_states,
+                                const std::string &loc_labels)
+      : states_(loc_states), labels_(loc_labels){};
+  torch::data::Example<> get(size_t index) override {
+    return {states_[index], labels_[index]};
+  };
+};
+
 using namespace torch;
 
 int main(int argc, char *argv[]) {
+
+  const size_t data_size = train_x.size(0);
+  const size_t epoch_size = 100;
+  const size_t batch_size = 1;
+  const int64_t batches_per_epoch =
+      std::ceil(data_size / static_cast<double>(batch_size));
+  const int64_t kLogInterval = 1000;
+  const int64_t kCheckpointEvery = 10000;
+
   // Use GPU when present, CPU otherwise.
   torch::Device device(torch::kCPU);
   if (torch::cuda::is_available()) {
@@ -33,10 +55,12 @@ int main(int argc, char *argv[]) {
   std::vector<float> train_y_raw;
   std::tie(train_x_raw, train_y_raw) = getTrainingData();
 
+  // Shuffle training data.
   auto rng = std::default_random_engine{};
   std::shuffle(train_x_raw.begin(), train_x_raw.end(), rng);
   std::shuffle(train_y_raw.begin(), train_y_raw.end(), rng);
 
+  // Create tensors based on the training data.
   Backend b;
   torch::Tensor train_x =
       torch::from_blob(train_x_raw.data(), train_x_raw.size())
@@ -44,9 +68,17 @@ int main(int argc, char *argv[]) {
   torch::Tensor train_y =
       torch::from_blob(train_y_raw.data(), train_y_raw.size())
           .toBackend(c10::Backend::CUDA);
-
   std::cout << "train_x size: " << train_x.size(0) << std::endl;
   std::cout << "train_y size: " << train_y.size(0) << std::endl;
+
+  // Generate a dataset
+  auto data_set = OneDimMappingDataset(loc_states, loc_labels)
+                      .map(torch::data::transforms::Stack<>());
+
+  // Generate a data loader.
+  auto data_loader =
+      torch::data::make_data_loader<torch::data::samplers::SequentialSampler>(
+          std::move(data_set), batch_size);
 
   // Define network
   nn::Sequential func_approximator(
@@ -65,29 +97,17 @@ int main(int argc, char *argv[]) {
     torch::load(func_approximator, "cos-func-approx-checkpoint.pt");
   }
 
-  const size_t data_size = train_x.size(0);
-  const size_t epoch_size = 100;
-  const size_t batch_size = 1;
-  const int64_t batches_per_epoch =
-      std::ceil(data_size / static_cast<double>(batch_size));
-  const int64_t kLogInterval = 1000;
-  const int64_t kCheckpointEvery = 10000;
   size_t epoch_idx = 0;
   size_t batch_index = 0;
   while (epoch_idx < epoch_size) {
-    while (batch_size * batch_index < data_size) {
+    for (auto &batch : data_loader) {
       // Train discriminator with real images.
       func_approximator->zero_grad();
-      size_t start_idx = batch_size * batch_index;
-      size_t end_idx = (start_idx + batch_size < data_size)
-                           ? (start_idx + batch_size)
-                           : data_size;
-      torch::TensorList list;
+      auto data = batch.data;
+      auto labels = batch.target;
 
-      torch::Tensor real_images = train_x.slice(0, start_idx, end_idx);
-      torch::Tensor real_labels = train_y.slice(0, start_idx, end_idx);
-      torch::Tensor real_output = func_approximator->forward(real_images);
-      torch::Tensor d_loss_real = torch::mse_loss(real_output, real_labels);
+      torch::Tensor real_output = func_approximator->forward(data);
+      torch::Tensor d_loss_real = torch::mse_loss(real_output, labels);
       d_loss_real.backward();
 
       if (batch_index % kLogInterval == 0) {
