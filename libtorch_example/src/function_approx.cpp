@@ -3,8 +3,8 @@
 #include <torch/torch.h>
 
 std::pair<std::vector<double>, std::vector<double>>
-getTrainingData(double i_max = 10000000, double x_min = -3 * M_PI,
-                double x_max = 3 * M_PI) {
+getTrainingData(double i_max = 1000000, double x_min = -M_PI,
+                double x_max = M_PI) {
   std::vector<double> x(i_max);
   std::vector<double> y(i_max);
 
@@ -45,8 +45,8 @@ using namespace torch;
 int main(int argc, char *argv[]) {
 
   const size_t epoch_size = 100;
-  const size_t batch_size = 1000;
-  const int64_t kLogInterval = 50;
+  const size_t batch_size = 10000;
+  const int64_t kLogInterval = 10;
   const int64_t kCheckpointEvery = 10000;
 
   // Use GPU when present, CPU otherwise.
@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
   // Get training data.
   std::vector<double> train_x;
   std::vector<double> train_y;
-  std::tie(train_x, train_y) = getTrainingData(100000);
+  std::tie(train_x, train_y) = getTrainingData();
 
   std::cout << "train_x size: " << train_x.size() << std::endl;
   std::cout << "train_y size: " << train_y.size() << std::endl;
@@ -120,6 +120,7 @@ int main(int argc, char *argv[]) {
         std::printf("\r[%2ld/%2ld][%3ld/%3ld] loss: %.4f \n", epoch_idx,
                     epoch_size, batch_index, batches_per_epoch,
                     d_loss_real.item<double>());
+        /*
         auto test_x = torch::randn(1) * M_PI;
         auto test_y =
             func_approximator->forward(test_x.toBackend(c10::Backend::CUDA));
@@ -127,6 +128,7 @@ int main(int argc, char *argv[]) {
                     test_x[0].item<double>(),
                     std::cos(test_x[0].item<double>()),
                     test_y[0].item<double>());
+        */
       }
 
       if (batch_index % kCheckpointEvery == 0) {
