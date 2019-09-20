@@ -45,7 +45,7 @@ using namespace torch;
 int main(int argc, char *argv[]) {
 
   const size_t epoch_size = 100;
-  const size_t batch_size = 500;
+  const size_t batch_size = 1000;
   const int64_t kLogInterval = 50;
   const int64_t kCheckpointEvery = 10000;
 
