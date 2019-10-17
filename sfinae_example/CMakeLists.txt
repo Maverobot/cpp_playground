@@ -3,9 +3,14 @@ project(sfinae_example)
 
 set(CMAKE_BUILD_TYPE Release)
 
-add_executable(sfinae_example
-  src/sfinae_example.cpp
+add_executable(default_constructable
+  src/default_constructable.cpp
 )
+set_target_properties(default_constructable PROPERTIES
+  CXX_STANDARD 17)
 
-set_target_properties(sfinae_example PROPERTIES
+add_executable(is_convertable
+  src/is_convertable.cpp
+)
+set_target_properties(is_convertable PROPERTIES
   CXX_STANDARD 17)
