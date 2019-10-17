@@ -40,5 +40,13 @@ int main(int argc, char *argv[]) {
             << isConvertible<Derived, Base> << std::endl;
   std::cout << "LonelyClass -> Base convertible: "
             << isConvertible<LonelyClass, Base> << std::endl;
+  std::cout << "int -> int convertible: "
+            << isConvertible<int, int> << std::endl;
+  std::cout << "int -> std::string convertible: "
+            << isConvertible<int, std::string> << std::endl;
+  std::cout << "char const* -> std::string convertible: "
+            << isConvertible<char const *, std::string> << std::endl;
+  std::cout << "std::string -> char const* convertible: "
+            << isConvertible<std::string, char const *> << std::endl;
   return 0;
 }
