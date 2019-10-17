@@ -29,6 +29,7 @@ using IsConvertible = typename IsConvertibleHelper<FROM, TO>::Type;
 template <typename FROM, typename TO>
 constexpr bool isConvertible = IsConvertibleHelper<FROM, TO>::value;
 
+// Test classes
 struct Base {};
 struct Derived : Base {};
 struct LonelyClass {};

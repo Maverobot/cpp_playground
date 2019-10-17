@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.4)
-project(sfinae_example)
+project(sfinae_examples)
 
 set(CMAKE_BUILD_TYPE Release)
 
