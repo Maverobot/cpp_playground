@@ -3,14 +3,15 @@ project(sfinae_examples)
 
 set(CMAKE_BUILD_TYPE Release)
 
-add_executable(default_constructable
-  src/default_constructable.cpp
+# Defines macro for adding examples
+macro(add_example name)
+add_executable(${name}
+  src/${name}.cpp
 )
-set_target_properties(default_constructable PROPERTIES
+set_target_properties(${name} PROPERTIES
   CXX_STANDARD 17)
+endmacro()
 
-add_executable(is_convertable
-  src/is_convertable.cpp
-)
-set_target_properties(is_convertable PROPERTIES
-  CXX_STANDARD 17)
+add_example(default_constructable)
+add_example(is_convertible)
+add_example(detect_member_types)
