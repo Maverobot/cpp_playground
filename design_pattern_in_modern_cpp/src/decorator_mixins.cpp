@@ -1,3 +1,4 @@
+#include <functional>
 #include <iostream>
 #include <ostream>
 #include <sstream>
@@ -35,6 +36,17 @@ template <typename Point> struct Color {
     ss << "[ r = " << r << ", g = " << g << ", b = " << b << " ] ";
     return ss.str();
   };
+
+  // This function shows the ability to access public interfaces from Point.
+  std::string colorInfo() const {
+    std::stringstream ss;
+    ss << " Point (" << asPoint().x << ", " << asPoint().y << ") "
+       << "[ r = " << r << ", g = " << g << ", b = " << b << " ] ";
+    return ss.str();
+  }
+
+private:
+  const Point &asPoint() const { return *static_cast<Point const *>(this); }
 };
 
 // Feature class - transparancy
@@ -70,6 +82,9 @@ int main(int argc, char *argv[]) {
   std::cout << " transparant point: " << transparant_point << std::endl;
   std::cout << " colored transparant point: " << colored_transparant_point
             << std::endl;
+
+  std::cout << " interface added by Color: "
+            << colored_transparant_point.colorInfo() << std::endl;
 
   return 0;
 }
