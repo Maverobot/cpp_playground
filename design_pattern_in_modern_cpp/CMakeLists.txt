@@ -7,3 +7,8 @@ add_executable(decorator_mixins
   src/decorator_mixins.cpp
 )
 target_compile_features(decorator_mixins PRIVATE cxx_std_17)
+
+add_executable(builder
+  src/builder.cpp
+)
+target_compile_features(builder PRIVATE cxx_std_17)
