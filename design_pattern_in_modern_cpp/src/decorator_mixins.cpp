@@ -4,6 +4,12 @@
 #include <sstream>
 /*
  * Curiously Recrring Template Pattern(CRTP) with Mixins
+ *
+ * CRTP pattern refers to a general class of tehniques that consists of passing
+ * a derived class as a template argument to one of its own base classes.
+ *
+ * Mixins provide an alternative way to customize the behavior of a type without
+ * inheriting from it.
  **/
 
 // Base class - Point
