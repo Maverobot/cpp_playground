@@ -12,3 +12,8 @@ add_executable(builder
   src/builder.cpp
 )
 target_compile_features(builder PRIVATE cxx_std_17)
+
+add_executable(factory
+  src/factory.cpp
+)
+target_compile_features(factory PRIVATE cxx_std_17)
