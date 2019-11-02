@@ -1,4 +1,5 @@
 
+#include <functional>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -18,18 +19,30 @@
  * Reference: Page 198, Modern C++ Design by Andrei Alexandrescu.
  **/
 
+// Behavior on unknown type is returning nullptr
 template <typename IdentifierType, typename AbstractProduct>
-class DefaultFactoryError {
+class FactoryErrorNullptr {
 protected:
   static AbstractProduct *onUnknownType(const IdentifierType &id) {
     return nullptr;
   }
 };
 
+// Behavior on unknown type is returning nullptr
+template <typename IdentifierType, typename AbstractProduct>
+class FactoryErrorException {
+protected:
+  static AbstractProduct *onUnknownType(const IdentifierType &id) {
+    throw std::invalid_argument("Unknown object type passed to Factory");
+  }
+};
+
+// Default behavior on unknown type is returning nullptr
+
 template <typename AbstractProduct, typename IdentifierType,
-          typename ProductCreator = AbstractProduct *(*)(),
+          typename ProductCreator = std::function<AbstractProduct *()>,
           template <typename, typename> class FactoryErrorPolicy =
-              DefaultFactoryError>
+              FactoryErrorNullptr>
 class Factory : public FactoryErrorPolicy<IdentifierType, AbstractProduct> {
 public:
   Factory() = default;
@@ -71,19 +84,31 @@ struct Pear : Fruit {
 };
 
 int main(int argc, char *argv[]) {
+  // Prepare factory
   Factory<Fruit, int> fruit_factory;
   fruit_factory.registerCreator(0, []() -> Fruit * { return new Apple(); });
   fruit_factory.registerCreator(1, []() -> Fruit * { return new Banana(); });
   fruit_factory.registerCreator(2, []() -> Fruit * { return new Pear(); });
 
-  // Create apple, banana and pear
+  // Create apple, banana, pear and some unknown fruit
   std::unique_ptr<Fruit> apple_ptr(fruit_factory.createObject(0));
   std::unique_ptr<Fruit> banana_ptr(fruit_factory.createObject(1));
   std::unique_ptr<Fruit> pear_ptr(fruit_factory.createObject(2));
+  std::unique_ptr<Fruit> unknown_fruit_ptr(fruit_factory.createObject(3));
 
   // Check info
   apple_ptr->info();
   banana_ptr->info();
   pear_ptr->info();
+
+  if (!unknown_fruit_ptr) {
+    std::cout << "This fruit does not exist." << std::endl;
+  }
+
+  // Factory with exception
+  Factory<Fruit, int, std::function<Fruit *()>, FactoryErrorException>
+      fruit_factory_exc;
+  std::unique_ptr<Fruit> unknown_fruit2_ptr(fruit_factory_exc.createObject(99));
+
   return 0;
 }
