@@ -3,7 +3,7 @@
 #include <utility>
 
 auto get_polynomial_functor() {
-  return [=](double x) { return 0; };
+  return [=](double x) -> double { return 0; };
 }
 
 template <
