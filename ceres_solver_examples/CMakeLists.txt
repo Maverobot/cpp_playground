@@ -22,3 +22,10 @@ find_package(Ceres CONFIG REQUIRED)
 
 add_executable(hello_world src/hello_world.cpp)
 target_link_libraries(hello_world PUBLIC ceres)
+
+
+find_package(PythonLibs 2.7)
+add_executable(pseudo_spline src/pseudo_spline.cpp)
+target_include_directories(pseudo_spline PRIVATE
+  ${PYTHON_INCLUDE_DIRS})
+target_link_libraries(pseudo_spline PUBLIC ceres ${PYTHON_LIBRARIES})
