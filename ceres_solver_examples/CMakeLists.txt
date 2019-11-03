@@ -15,10 +15,10 @@ SHA1 "6969b8330f8db140196d567dd0c570f8789c3c4e"
 LOCAL
 )
 
-project(ceres_solver_example)
+project(ceres_solver_examples)
 
 hunter_add_package(ceres-solver)
 find_package(Ceres CONFIG REQUIRED)
 
-add_executable(ceres_solver_example src/ceres_solver_example.cpp)
-target_link_libraries(ceres_solver_example PUBLIC ceres)
+add_executable(hello_world src/hello_world.cpp)
+target_link_libraries(hello_world PUBLIC ceres)
