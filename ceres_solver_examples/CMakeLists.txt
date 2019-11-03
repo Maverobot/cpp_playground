@@ -17,6 +17,8 @@ LOCAL
 
 project(ceres_solver_examples)
 
+set(CMAKE_CXX_STANDARD 17)
+
 hunter_add_package(ceres-solver)
 find_package(Ceres CONFIG REQUIRED)
 
@@ -25,7 +27,8 @@ target_link_libraries(hello_world PUBLIC ceres)
 
 
 find_package(PythonLibs 2.7)
-add_executable(pseudo_spline src/pseudo_spline.cpp)
-target_include_directories(pseudo_spline PRIVATE
+add_executable(quintic_polynomial src/quintic_polynomial.cpp)
+target_include_directories(quintic_polynomial PRIVATE
+  include
   ${PYTHON_INCLUDE_DIRS})
-target_link_libraries(pseudo_spline PUBLIC ceres ${PYTHON_LIBRARIES})
+target_link_libraries(quintic_polynomial PUBLIC ceres ${PYTHON_LIBRARIES})

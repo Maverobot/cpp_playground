@@ -1,6 +1,12 @@
 #include "ceres/ceres.h"
 #include "glog/logging.h"
-#include "matplotlibcpp.h"
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wregister"
+#include <matplotlibcpp.h> //NO_LINT
+#pragma GCC diagnostic pop
+
+#include <polynomial.h>
 
 using ceres::AutoDiffCostFunction;
 using ceres::CostFunction;
@@ -22,8 +28,7 @@ struct QuinticPolynomialResidual {
                   T *residual) const {
     // residual = y - (a*x^5 + b*x^4 + c*x^3 + d*x^2 + e*x + f)
     residual[0] =
-        y_ - (a[0] * x_ * x_ * x_ * x_ * x_ + b[0] * x_ * x_ * x_ * x_ +
-              c[0] * x_ * x_ * x_ + d[0] * x_ * x_ + e[0] * x_ + f[0]);
+        y_ - get_polynomial_functor(a[0], b[0], c[0], d[0], e[0], f[0])(x_);
     return true;
   }
 
@@ -58,10 +63,7 @@ int main(int argc, char **argv) {
   std::cout << "Final   a: " << a << " b: " << b << " c: " << c << " d: " << d
             << " e: " << e << " f: " << f << std::endl;
 
-  auto generator = [a, b, c, d, e, f](double x) {
-    return a * x * x * x * x * x + b * x * x * x * x + c * x * x * x +
-           d * x * x + e * x + f;
-  };
+  auto generator = get_polynomial_functor(a, b, c, d, e, f);
 
   // Interpolated data
   int n = 5000;
