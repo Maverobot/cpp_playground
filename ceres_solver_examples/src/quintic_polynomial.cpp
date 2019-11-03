@@ -20,6 +20,7 @@ struct QuinticPolynomialResidual {
   bool operator()(const T *const a, const T *const b, const T *const c,
                   const T *const d, const T *const e, const T *const f,
                   T *residual) const {
+    // residual = y - (a*x^5 + b*x^4 + c*x^3 + d*x^2 + e*x + f)
     residual[0] =
         y_ - (a[0] * x_ * x_ * x_ * x_ * x_ + b[0] * x_ * x_ * x_ * x_ +
               c[0] * x_ * x_ * x_ + d[0] * x_ * x_ + e[0] * x_ + f[0]);
