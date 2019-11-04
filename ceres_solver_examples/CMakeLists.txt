@@ -19,16 +19,22 @@ project(ceres_solver_examples)
 
 set(CMAKE_CXX_STANDARD 17)
 
+find_package(PythonLibs 2.7)
+
 hunter_add_package(ceres-solver)
 find_package(Ceres CONFIG REQUIRED)
 
 add_executable(hello_world src/hello_world.cpp)
 target_link_libraries(hello_world PUBLIC ceres)
 
-
-find_package(PythonLibs 2.7)
 add_executable(quintic_polynomial src/quintic_polynomial.cpp)
 target_include_directories(quintic_polynomial PRIVATE
   include
   ${PYTHON_INCLUDE_DIRS})
 target_link_libraries(quintic_polynomial PUBLIC ceres ${PYTHON_LIBRARIES})
+
+add_executable(polynomial_trajectory_generator src/polynomial_trajectory_generator.cpp)
+target_include_directories(polynomial_trajectory_generator PRIVATE
+  include
+  ${PYTHON_INCLUDE_DIRS})
+target_link_libraries(polynomial_trajectory_generator PUBLIC ceres ${PYTHON_LIBRARIES})
