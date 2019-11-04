@@ -22,7 +22,7 @@ template <
 auto get_polynomial_functor_derivative(T first, Args... args) {
   constexpr size_t num_args = sizeof...(args);
   if constexpr (num_args == 0) {
-    return [=](double x) -> T { return 0.0; };
+      return [=](double x) -> T { return T(); };
   } else {
     return [=](double x) -> T {
       return first * std::pow(x, num_args - 1) +

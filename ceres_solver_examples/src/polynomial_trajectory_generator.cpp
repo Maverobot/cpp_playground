@@ -16,53 +16,36 @@ using ceres::Solver;
 
 namespace plt = matplotlibcpp;
 
-const int kNumObservations = 4;
-const std::vector<double> t{2, 3, 4, 5};
-const std::vector<double> positions{2, 1, 1, 1};
-const std::vector<double> velocities{0, 0, 0, 0};
+const std::vector<double> t{2, 7};
+const std::vector<double> positions{0, 0};
+const std::vector<double> velocities{1, 1};
+const int kNumObservations = t.size();
 
-struct PositionQuinticPolynomialResidual {
-  PositionQuinticPolynomialResidual(double x, double y) : x_(x), y_(y) {}
+struct QuinticTrajectoryGeneratorResidual {
+  QuinticTrajectoryGeneratorResidual(double t, double x, double dx)
+      : t_(t), x_(x), dx_(dx) {}
   template <typename T>
   bool operator()(const T *const a, const T *const b, const T *const c,
                   const T *const d, const T *const e, const T *const f,
                   T *residual) const {
-    // residual = y - (a*x^5 + b*x^4 + c*x^3 + d*x^2 + e*x + f)
+    // residual = x - (a*x^5 + b*x^4 + c*x^3 + d*x^2 + e*x + f)
     residual[0] =
-        y_ - get_polynomial_functor(a[0], b[0], c[0], d[0], e[0], f[0])(x_);
+        x_ - get_polynomial_functor(a[0], b[0], c[0], d[0], e[0], f[0])(t_);
+
+    // residual = dx - (5*a*x^4 + 4*b*x^3 + 3*c*x^2 + 2*d*x + e)
+    residual[1] = dx_ - get_polynomial_functor_derivative(a[0], b[0], c[0],
+                                                          d[0], e[0], f[0])(t_);
     return true;
   }
 
 private:
+  const double t_;
   const double x_;
-  const double y_;
-};
-
-struct VelocityQuinticPolynomialResidual {
-  VelocityQuinticPolynomialResidual(double x, double y) : x_(x), y_(y) {}
-  template <typename T>
-  bool operator()(const T *const a, const T *const b, const T *const c,
-                  const T *const d, const T *const e, const T *const f,
-                  T *residual) const {
-    // residual = y - (5*a*x^4 + 4*b*x^3 + 3*c*x^2 + 2*d*x + e)
-    residual[0] = y_ - get_polynomial_functor_derivative(a[0], b[0], c[0], d[0],
-                                                         e[0], f[0])(x_);
-    return true;
-  }
-
-private:
-  const double x_;
-  const double y_;
+  const double dx_;
 };
 
 int main(int argc, char **argv) {
   google::InitGoogleLogging(argv[0]);
-  // Test
-  auto func = get_polynomial_functor_derivative(2, 2);
-  std::cout << func(1) << std::endl;
-  std::cout << func(2) << std::endl;
-  return 1;
-
   double a = 0.0;
   double b = 0.0;
   double c = 0.0;
@@ -72,20 +55,15 @@ int main(int argc, char **argv) {
   Problem problem;
   for (int i = 0; i < kNumObservations; ++i) {
     problem.AddResidualBlock(
-        new AutoDiffCostFunction<PositionQuinticPolynomialResidual, 1, 1, 1, 1,
+        new AutoDiffCostFunction<QuinticTrajectoryGeneratorResidual, 2, 1, 1, 1,
                                  1, 1, 1>(
-            new PositionQuinticPolynomialResidual(t[i], positions[i])),
-        NULL, &a, &b, &c, &d, &e, &f);
-
-    problem.AddResidualBlock(
-        new AutoDiffCostFunction<VelocityQuinticPolynomialResidual, 1, 1, 1, 1,
-                                 1, 1, 1>(
-            new VelocityQuinticPolynomialResidual(t[i], velocities[i])),
+            new QuinticTrajectoryGeneratorResidual(t[i], positions[i],
+                                                   velocities[i])),
         NULL, &a, &b, &c, &d, &e, &f);
   }
   Solver::Options options;
   options.max_num_iterations = 25;
-  options.linear_solver_type = ceres::DENSE_QR;
+  options.linear_solver_type = ceres::DENSE_NORMAL_CHOLESKY;
   options.minimizer_progress_to_stdout = true;
   Solver::Summary summary;
   Solve(options, &problem, &summary);
@@ -98,8 +76,8 @@ int main(int argc, char **argv) {
   // Interpolated data
   int n = 5000;
   std::vector<double> x(n), y(n);
-  const double t_min = 0;
-  const double t_max = 5;
+  const double t_min = *std::min_element(t.cbegin(), t.cend()) - 1;
+  const double t_max = *std::max_element(t.cbegin(), t.cend()) + 1;
   const double interval = (t_max - t_min) / n;
   for (size_t i = 0; i < n; i++) {
     x.at(i) = t_min + i * interval;
@@ -114,7 +92,7 @@ int main(int argc, char **argv) {
   // Set x-axis to interval [0,1000000]
   plt::xlim(0, 5);
   // Add graph title
-  plt::title("Cubic Polynomial Test");
+  plt::title("Quintic Polynomial Test");
   plt::axis("equal");
   plt::legend();
   plt::show();
