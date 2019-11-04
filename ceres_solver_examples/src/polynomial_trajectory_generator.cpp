@@ -16,9 +16,11 @@ using ceres::Solver;
 
 namespace plt = matplotlibcpp;
 
-const std::vector<double> t{2, 7};
-const std::vector<double> positions{0, 0};
-const std::vector<double> velocities{1, 1};
+const std::vector<double> t{2, 7, 11, 13};
+const std::vector<double> positions{1, 1, 1, 1};
+// TODO: velocities have little impact for now, it seems ceres-solver stops at
+// the first local minimum
+const std::vector<double> velocities{0, 0, 0, 0};
 const int kNumObservations = t.size();
 
 struct QuinticTrajectoryGeneratorResidual {
@@ -38,6 +40,8 @@ struct QuinticTrajectoryGeneratorResidual {
     return true;
   }
 
+  static constexpr size_t num_residuals = 2;
+
 private:
   const double t_;
   const double x_;
@@ -46,21 +50,23 @@ private:
 
 int main(int argc, char **argv) {
   google::InitGoogleLogging(argv[0]);
-  double a = 0.0;
-  double b = 0.0;
-  double c = 0.0;
-  double d = 0.0;
-  double e = 0.0;
-  double f = 0.0;
+  double a = 0;
+  double b = 0;
+  double c = 0;
+  double d = 0;
+  double e = 0;
+  double f = 0;
   Problem problem;
   for (int i = 0; i < kNumObservations; ++i) {
     problem.AddResidualBlock(
-        new AutoDiffCostFunction<QuinticTrajectoryGeneratorResidual, 2, 1, 1, 1,
-                                 1, 1, 1>(
-            new QuinticTrajectoryGeneratorResidual(t[i], positions[i],
-                                                   velocities[i])),
+        new AutoDiffCostFunction<
+            QuinticTrajectoryGeneratorResidual,
+            QuinticTrajectoryGeneratorResidual::num_residuals, 1, 1, 1, 1, 1,
+            1>(new QuinticTrajectoryGeneratorResidual(t[i], positions[i],
+                                                      velocities[i])),
         NULL, &a, &b, &c, &d, &e, &f);
   }
+
   Solver::Options options;
   options.max_num_iterations = 25;
   options.linear_solver_type = ceres::DENSE_NORMAL_CHOLESKY;
