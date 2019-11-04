@@ -5,7 +5,7 @@
 
 struct CostFunctor {
   template <typename T> bool operator()(T const *const x, T *residual) const {
-    residual[0] = T(10.0) - x[0];
+    residual[0] = T(100.0) - x[0] * x[0] + T(20) * cos(2 * M_PI * x[0]);
     return true;
   }
 };
@@ -13,15 +13,16 @@ struct CostFunctor {
 int main(int argc, char *argv[]) {
   google::InitGoogleLogging(argv[0]);
 
-  const double initial_x = 0;
+  // change the initial value to see different local minima
+  const double initial_x = 0.1;
   double x = initial_x;
 
   ceres::Problem problem;
 
-  std::unique_ptr<ceres::CostFunction> cost_function(
+  ceres::CostFunction *cost_function(
       new ceres::AutoDiffCostFunction<CostFunctor, 1, 1>(new CostFunctor));
 
-  problem.AddResidualBlock(cost_function.get(), NULL, &x);
+  problem.AddResidualBlock(cost_function, NULL, &x);
 
   // Run the solver
   ceres::Solver::Options options;
@@ -32,6 +33,6 @@ int main(int argc, char *argv[]) {
 
   // std::cout << summary.BriefReport() << std::endl;
   std::cout << summary.FullReport() << std::endl;
-  // std::cout << "x : " << initial_x << " -> " << x << std::endl;
+  std::cout << "x : " << initial_x << " -> " << x << std::endl;
   return 0;
 }
