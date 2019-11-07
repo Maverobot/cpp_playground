@@ -5,11 +5,8 @@ set(CMAKE_BUILD_TYPE Release)
 
 # Defines macro for adding examples
 macro(add_example name)
-add_executable(${name}
-  src/${name}.cpp
-)
-set_target_properties(${name} PROPERTIES
-  CXX_STANDARD 17)
+  add_executable(${name} src/${name}.cpp)
+  set_target_properties(${name} PROPERTIES CXX_STANDARD 17)
 endmacro()
 
 add_example(default_constructable)
