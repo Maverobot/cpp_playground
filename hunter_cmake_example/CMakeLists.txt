@@ -12,7 +12,7 @@ include(${CMAKE_BINARY_DIR}/HunterGate.cmake)
 HunterGate(
 URL "https://github.com/cpp-pm/hunter/archive/v0.23.215.tar.gz"
 SHA1 "6969b8330f8db140196d567dd0c570f8789c3c4e"
-LOCAL
+LOCAL # This tells hunter to search for cmake/Hunter/config.cmake as local configuration
 )
 
 project(download-dlib)

@@ -8,6 +8,7 @@ set(DLIB_CMAKE_ARGS
   )
 
 hunter_config(dlib
+  # Version tag can be found in project_name/hunter.cmake at https://github.com/ruslo/hunter/tree/master/cmake/projects
   VERSION "19.17-p0"
   CONFIGURATION_TYPES "Release"
   CMAKE_ARGS "${DLIB_CMAKE_ARGS}")
