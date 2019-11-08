@@ -1,0 +1,3 @@
+[submodule "cmake_scripts_example/cmake/common"]
+	path = cmake_scripts_example/cmake/common
+	url = https://github.com/Maverobot/cmake-scripts.git
