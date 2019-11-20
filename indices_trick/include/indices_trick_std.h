@@ -10,7 +10,7 @@ std::array<int, sizeof...(Is)> f_all_dispatch(Op &&op, Tuple &&t,
                                               std::index_sequence<Is...>) {
   return std::array<int, sizeof...(Is)>{
       {std::forward<Op>(op)(std::get<Is>(std::forward<Tuple>(t)))...}};
-};
+}
 template <typename Op, typename Tuple>
 std::array<int, std::tuple_size<Tuple>::value> execute_all(Op &&op,
                                                            const Tuple &t) {
