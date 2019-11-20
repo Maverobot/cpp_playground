@@ -1,23 +1,15 @@
-#include "nameof.hpp"
+
+#include <index_of_type.hpp>
+#include <indices_trick_std.h>
+#include <nameof.hpp>
+
+#include <algorithm>
 #include <iostream>
 #include <tuple>
 
 class ClassA {};
 class ClassB {};
 class ClassC {};
-
-// Index of type in tuple
-template <class T, class Tuple> struct Index;
-template <class T, class... Types> struct Index<T, std::tuple<T, Types...>> {
-  static constexpr std::size_t value = 0;
-};
-template <class T, class U, class... Types>
-struct Index<T, std::tuple<U, Types...>> {
-  static constexpr std::size_t value =
-      1 + Index<T, std::tuple<Types...>>::value;
-};
-template <typename T, typename Tuple>
-constexpr int idx = Index<T, Tuple>::value;
 
 // Type of index in tuple
 template <class... Args> struct type_list {
@@ -41,29 +33,49 @@ template <typename... TypeList> struct TypeMap {
                                               std::tuple<TypeList...>>::type;
 };
 
+template <typename T> struct value_match {
+  value_match(T target) : target(target){};
+  template <typename U> bool operator()(U &&value) const {
+    if constexpr (std::is_convertible_v<std::decay_t<T>, std::string_view> &&
+                  std::is_convertible_v<std::decay_t<U>, std::string_view>) {
+      if (value == target) {
+        std::cout << "same type, same value" << std::endl;
+        return true;
+      }
+      std::cout << "same type, different value" << std::endl;
+      return false;
+    } else {
+      std::cout << "different type: " << typeid(T).name() << " vs "
+                << typeid(U).name() << std::endl;
+      return false;
+    }
+  }
+  T target;
+};
+
+template <typename Tuple, typename T>
+int getIndexByValue(Tuple &&tup, T &&value) {
+  auto flags = indices_trick_std::execute_all(
+      value_match(std::forward<T>(value)), std::forward<Tuple>(tup));
+  auto iter =
+      std::find_if(flags.cbegin(), flags.cend(), [](auto &v) { return v; });
+  if (iter != flags.cend()) {
+    return std::distance(flags.cbegin(), iter);
+  }
+  return -1;
+}
+
 int main(int, char **) {
-
-  using T = const int &;
-  T var = 42;
-  // Name of variable type.
-  std::cout << NAMEOF_TYPE_EXPR(var) << std::endl;
-  std::cout << nameof::nameof_type<decltype(var)>() << std::endl;
-  std::cout << nameof::nameof_full_type<decltype(var)>() << std::endl;
-
-  // Name of type.
-  std::cout << NAMEOF_TYPE(T) << std::endl;
-  std::cout << NAMEOF_FULL_TYPE(T) << std::endl;
-  std::cout << nameof::nameof_type<T>() << std::endl;
-  std::cout << nameof::nameof_full_type<T>() << std::endl;
-
   auto type_names = TypeMap<ClassA, ClassB, ClassC>().names;
+
+  std::string test_name("ClassA");
 
   std::apply(
       [](const auto &... names) { ((std::cout << names << std::endl), ...); },
       type_names);
 
-  using type_map = TypeMap<ClassA, ClassB, ClassC>;
-
+  std::cout << getIndexByValue(type_names, "ClassA") << std::endl;
+  std::cout << getIndexByValue(type_names, "ClassB") << std::endl;
+  std::cout << getIndexByValue(type_names, "ClassC") << std::endl;
   ;
-  // type_map::getType<nameof::cstring<6>("ClassA")> class_a_object;
 }
