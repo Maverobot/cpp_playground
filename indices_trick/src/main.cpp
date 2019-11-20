@@ -1,10 +1,10 @@
+#include <algorithm>
 #include <array>
 #include <iostream>
 #include <iterator>
 #include <tuple>
 
 #include <indices_trick_own.h>
-
 #include <indices_trick_std.h>
 
 // Make std::array printable with std::cout
@@ -23,6 +23,33 @@ struct GetTypeSize {
   template <typename T> int operator()(T &&) const { return sizeof(T); }
 };
 
+template <typename T> struct value_match {
+  value_match(T target) : target(target){};
+  template <typename U> bool operator()(U &&value) const {
+    if constexpr (std::is_same_v<std::decay_t<T>, std::decay_t<U>>) {
+      if (value == target) {
+        return true;
+      }
+      return false;
+    } else {
+      return false;
+    }
+  }
+  T target;
+};
+
+template <typename Tuple, typename T>
+int getIndexByValue(Tuple &&tup, T &&value) {
+  auto flags = indices_trick_std::execute_all(
+      value_match(std::forward<T>(value)), std::forward<Tuple>(tup));
+  auto iter =
+      std::find_if(flags.cbegin(), flags.cend(), [](auto &v) { return v; });
+  if (iter != flags.cend()) {
+    return std::distance(flags.cbegin(), iter);
+  }
+  return -1;
+}
+
 int main(int argc, char *argv[]) {
 
   // Naive implementation with brute force
@@ -38,6 +65,10 @@ int main(int argc, char *argv[]) {
   // Indices trick with std::make_index_sequence, std::index_sequence
   auto res2 = indices_trick_std::execute_all(GetTypeSize{}, tup);
   std::cout << "Indices trick with std header <utility>: " << res2 << std::endl;
+
+  // Get index of the matching value
+  std::cout << "The index of the tuple having the matching value is: "
+            << getIndexByValue(tup, 0.99f) << std::endl;
 
   return 0;
 }
