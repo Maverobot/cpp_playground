@@ -18,7 +18,6 @@ std::ostream &operator<<(std::ostream &o, const std::array<T, N> &arr) {
  * Task: call function on each element of a tuple and save returned value in a
  * std::array
  */
-std::tuple<int, char, float, double> tup{42, 'a', 0.99, 1.99};
 struct get_type_size {
   template <typename T> int operator()(T &&) const { return sizeof(T); }
 };
@@ -52,6 +51,7 @@ int getIndexByValue(Tuple &&tup, T &&value) {
 
 int main(int argc, char *argv[]) {
 
+  std::tuple<int, char, float, double> tup{42, 'a', 0.99, 1.99};
   // Naive implementation with brute force
   std::array<int, 4> arr{
       get_type_size{}(std::get<0>(tup)), get_type_size{}(std::get<1>(tup)),
