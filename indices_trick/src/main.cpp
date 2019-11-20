@@ -19,7 +19,7 @@ std::ostream &operator<<(std::ostream &o, const std::array<T, N> &arr) {
  * std::array
  */
 std::tuple<int, char, float, double> tup{42, 'a', 0.99, 1.99};
-struct GetTypeSize {
+struct get_type_size {
   template <typename T> int operator()(T &&) const { return sizeof(T); }
 };
 
@@ -54,16 +54,16 @@ int main(int argc, char *argv[]) {
 
   // Naive implementation with brute force
   std::array<int, 4> arr{
-      GetTypeSize{}(std::get<0>(tup)), GetTypeSize{}(std::get<1>(tup)),
-      GetTypeSize{}(std::get<2>(tup)), GetTypeSize{}(std::get<3>(tup))};
+      get_type_size{}(std::get<0>(tup)), get_type_size{}(std::get<1>(tup)),
+      get_type_size{}(std::get<2>(tup)), get_type_size{}(std::get<3>(tup))};
   std::cout << "Naive: " << arr << std::endl;
 
   // Indices trick with own indices builder
-  auto res1 = indices_trick_own::execute_all(GetTypeSize{}, tup);
+  auto res1 = indices_trick_own::execute_all(get_type_size{}, tup);
   std::cout << "Indices trick with own indices builder: " << res1 << std::endl;
 
   // Indices trick with std::make_index_sequence, std::index_sequence
-  auto res2 = indices_trick_std::execute_all(GetTypeSize{}, tup);
+  auto res2 = indices_trick_std::execute_all(get_type_size{}, tup);
   std::cout << "Indices trick with std header <utility>: " << res2 << std::endl;
 
   // Get index of the matching value
