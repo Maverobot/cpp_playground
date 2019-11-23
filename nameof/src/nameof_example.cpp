@@ -58,17 +58,23 @@ int main(int, char **) {
   using type3 = concat<type2, double, float>::type;
   using type4 = concat<type3, float, double, int, void>::type;
 
-  using unique = unique_type_list<type4>::type;
-
-  std::cout << nameof::nameof_type<type2>() << std::endl;
-  std::cout << nameof::nameof_type<unique_type_list<type2>::type>() << std::endl
+  std::cout << "  type1: " << nameof::nameof_type<type1>() << std::endl;
+  std::cout << "unique1: "
+            << nameof::nameof_type<unique_type_list<type1>::type>() << std::endl
             << std::endl;
 
-  std::cout << nameof::nameof_type<type3>() << std::endl;
-  std::cout << nameof::nameof_type<unique_type_list<type3>::type>() << std::endl
+  std::cout << "  type2: " << nameof::nameof_type<type2>() << std::endl;
+  std::cout << "unique2: "
+            << nameof::nameof_type<unique_type_list<type2>::type>() << std::endl
             << std::endl;
 
-  std::cout << nameof::nameof_type<type4>() << std::endl;
-  std::cout << nameof::nameof_type<unique_type_list<type4>::type>()
+  std::cout << "  type3: " << nameof::nameof_type<type3>() << std::endl;
+  std::cout << "unique3: "
+            << nameof::nameof_type<unique_type_list<type3>::type>() << std::endl
+            << std::endl;
+
+  std::cout << "  type4: " << nameof::nameof_type<type4>() << std::endl;
+  std::cout << "unique4: "
+            << nameof::nameof_type<unique_type_list<type4>::type>()
             << std::endl;
 }
