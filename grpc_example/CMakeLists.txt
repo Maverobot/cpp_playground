@@ -12,8 +12,18 @@ find_package(gRPC CONFIG REQUIRED)
 
 add_subdirectory(messages)
 
-add_executable(greeter_server greeter_server.cpp)
+add_executable(greeter_server src/hello_world/greeter_server.cpp)
 target_link_libraries(greeter_server messages gRPC::grpc gRPC::grpc++_unsecure)
 
-add_executable(greeter_client greeter_client.cpp)
+add_executable(greeter_client src/hello_world/greeter_client.cpp)
 target_link_libraries(greeter_client messages gRPC::grpc gRPC::grpc++_unsecure)
+
+add_executable(route_guide_server src/route_guide/route_guide_server.cpp
+                                  src/route_guide/helper.cpp)
+target_link_libraries(route_guide_server messages gRPC::grpc
+                      gRPC::grpc++_unsecure)
+
+add_executable(route_guide_client src/route_guide/route_guide_client.cpp
+                                  src/route_guide/helper.cpp)
+target_link_libraries(route_guide_client messages gRPC::grpc
+                      gRPC::grpc++_unsecure)
