@@ -43,7 +43,7 @@ template <typename AbstractProduct, typename IdentifierType,
           typename ProductCreator = std::function<AbstractProduct *()>,
           template <typename, typename> class FactoryErrorPolicy =
               FactoryErrorNullptr>
-class Factory : public FactoryErrorPolicy<IdentifierType, AbstractProduct> {
+class Factory : private FactoryErrorPolicy<IdentifierType, AbstractProduct> {
 public:
   Factory() = default;
   bool registerCreator(const IdentifierType &id, ProductCreator creator) {
