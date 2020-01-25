@@ -11,3 +11,6 @@ target_compile_features(builder PRIVATE cxx_std_17)
 
 add_executable(factory src/factory.cpp)
 target_compile_features(factory PRIVATE cxx_std_17)
+
+add_executable(visitor src/visitor.cpp)
+target_compile_features(visitor PRIVATE cxx_std_17)
