@@ -3,6 +3,9 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <typeindex>
+
+#include "type.hpp"
 
 /* Why factory pattern?
  * - For virtual constructor, which does not exist natively in C++. You want to
@@ -50,8 +53,9 @@ public:
   template <typename T>
   bool registerCreator(const IdentifierType &id, T creator) {
     return associations_
-        .insert(
-            std::make_pair(id, reinterpret_cast<VoidFunctionType>(+creator)))
+        .insert(std::make_pair(
+            id, std::make_pair(reinterpret_cast<VoidFunctionType>(+creator),
+                               std::type_index(typeid(+creator)))))
         .second;
   };
   bool unregisterCreator(const IdentifierType &id) {
@@ -63,16 +67,28 @@ public:
                                 Args &&... args) const {
     auto i = associations_.find(id);
     if (i != associations_.end()) {
-      // Converts the generic function pointer to the concrete type
+      // Converts the generic function pointer to the concrete type. Drawback is
+      // that the function call never fails and can give undefined behavior when
+      // called with a different argument set.
       auto creator_func =
-          reinterpret_cast<AbstractProduct *(*)(Args...)>(i->second);
+          reinterpret_cast<AbstractProduct *(*)(Args...)>(i->second.first);
+      auto given_signature = std::type_index(typeid(creator_func));
+      auto saved_signature = i->second.second;
+      if (saved_signature != given_signature) {
+        std::string message("");
+        message = message + "function signature does not match: ";
+        message = message + demangle(saved_signature.name()) + " vs " +
+                  demangle(given_signature.name());
+        throw std::runtime_error(message.c_str());
+      }
       return creator_func(std::forward<Args>(args)...);
     }
     return ErrorPolicy::onUnknownType(id);
   }
 
 private:
-  using AssocMap = std::map<IdentifierType, VoidFunctionType>;
+  using FunctionType = std::pair<VoidFunctionType, std::type_index>;
+  using AssocMap = std::map<IdentifierType, FunctionType>;
   using ErrorPolicy = FactoryErrorPolicy<IdentifierType, AbstractProduct>;
   AssocMap associations_;
 };
@@ -109,8 +125,7 @@ int main(int argc, char *argv[]) {
 
   // Create apple, banana, pear and some unknown fruit
   std::unique_ptr<Fruit> apple_ptr(fruit_factory.createObject(0));
-  std::unique_ptr<Fruit> apple_ptr2(
-      fruit_factory.createObject(4, fruit_factory));
+  std::unique_ptr<Fruit> apple_ptr2(fruit_factory.createObject(4, ""));
   std::unique_ptr<Fruit> banana_ptr(fruit_factory.createObject(1));
   std::unique_ptr<Fruit> pear_ptr(fruit_factory.createObject(2));
   std::unique_ptr<Fruit> unknown_fruit_ptr(fruit_factory.createObject(3));
