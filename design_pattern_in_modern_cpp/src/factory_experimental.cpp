@@ -52,10 +52,20 @@ public:
 
   template <typename T>
   bool registerCreator(const IdentifierType &id, T creator) {
-    return associations_
-        .insert(std::make_pair(
-            id, std::make_pair(reinterpret_cast<VoidFunctionType>(+creator),
-                               std::type_index(typeid(+creator)))))
+    auto creator_pair =
+        std::make_pair(reinterpret_cast<VoidFunctionType>(+creator),
+                       std::type_index(typeid(+creator)));
+    auto it = associations_.find(id);
+    // There exists creator function for this id
+    if (it != associations_.cend()) {
+      // Add the new creator function as candidate
+      if (it->second.add(creator_pair)) {
+        return true;
+      }
+      throw std::runtime_error(
+          "the creator function with same signature already exists.");
+    }
+    return associations_.insert(std::make_pair(id, FunctionTypes(creator_pair)))
         .second;
   };
   bool unregisterCreator(const IdentifierType &id) {
@@ -67,29 +77,54 @@ public:
                                 Args &&... args) const {
     auto i = associations_.find(id);
     if (i != associations_.end()) {
-      // Converts the generic function pointer to the concrete type. Drawback is
-      // that the function call never fails and can give undefined behavior when
-      // called with a different argument set.
+      auto given_signature =
+          std::type_index(typeid(AbstractProduct * (*)(Args...)));
+      auto generic_func = i->second.get(given_signature, args...);
       auto creator_func =
-          reinterpret_cast<AbstractProduct *(*)(Args...)>(i->second.first);
-      auto given_signature = std::type_index(typeid(creator_func));
-      auto saved_signature = i->second.second;
-      if (saved_signature != given_signature) {
-        std::string message("");
-        message = message + "function signature does not match: ";
-        message = message + demangle(saved_signature.name()) + " vs " +
-                  demangle(given_signature.name());
-        throw std::runtime_error(message.c_str());
-      }
+          reinterpret_cast<AbstractProduct *(*)(Args...)>(generic_func);
       return creator_func(std::forward<Args>(args)...);
     }
     return ErrorPolicy::onUnknownType(id);
   }
 
 private:
-  using FunctionType = std::pair<VoidFunctionType, std::type_index>;
-  using AssocMap = std::map<IdentifierType, FunctionType>;
+  class FunctionTypes {
+  public:
+    using FunctionType = std::pair<VoidFunctionType, std::type_index>;
+
+    explicit FunctionTypes(FunctionType type) {
+      fs_.push_back(std::move(type));
+    }
+
+    bool add(FunctionType function_type) {
+      // Add if the type does not exist yet
+      if (std::find_if(fs_.cbegin(), fs_.cend(), [&function_type](auto &x) {
+            return x.second == function_type.second;
+          }) != fs_.cend()) {
+        return false;
+      }
+      fs_.push_back(std::move(function_type));
+      return true;
+    }
+
+    template <typename... Args>
+    VoidFunctionType get(const std::type_index &signature, Args... args) const {
+      for (auto func_type : fs_) {
+        auto saved_signature = func_type.second;
+        if (signature == saved_signature) {
+          return func_type.first;
+        }
+      }
+      throw std::runtime_error("no matching function.");
+    }
+
+  private:
+    std::vector<FunctionType> fs_;
+  };
+
+  using AssocMap = std::map<IdentifierType, FunctionTypes>;
   using ErrorPolicy = FactoryErrorPolicy<IdentifierType, AbstractProduct>;
+
   AssocMap associations_;
 };
 
@@ -105,6 +140,9 @@ struct Apple : Fruit {
   explicit Apple(int age) {
     std::cout << "created an apple with age of " << age << std::endl;
   }
+  explicit Apple(std::string info) {
+    std::cout << "created an apple with info: " << info << std::endl;
+  }
   void info() const override { std::cout << "This is an apple" << std::endl; }
 };
 struct Banana : Fruit {
@@ -116,19 +154,34 @@ struct Pear : Fruit {
 
 int main(int argc, char *argv[]) {
   // Prepare factory
-  Factory<Fruit, int> fruit_factory;
-  fruit_factory.registerCreator(0, []() -> Fruit * { return new Apple(); });
+  Factory<Fruit, std::string> fruit_factory;
+
+  // 3 Apple creators
+  fruit_factory.registerCreator("Apple",
+                                []() -> Fruit * { return new Apple(); });
+
   fruit_factory.registerCreator(
-      4, [](int age) -> Fruit * { return new Apple(age); });
-  fruit_factory.registerCreator(1, []() -> Fruit * { return new Banana(); });
-  fruit_factory.registerCreator(2, []() -> Fruit * { return new Pear(); });
+      "Apple", [](int age) -> Fruit * { return new Apple(age); });
+
+  fruit_factory.registerCreator(
+      "Apple", [](std::string info) -> Fruit * { return new Apple(info); });
+
+  // 1 Banana creator
+  fruit_factory.registerCreator("Banana",
+                                []() -> Fruit * { return new Banana(); });
+
+  // 1 Pear creator
+  fruit_factory.registerCreator("Pear", []() -> Fruit * { return new Pear(); });
 
   // Create apple, banana, pear and some unknown fruit
-  std::unique_ptr<Fruit> apple_ptr(fruit_factory.createObject(0));
-  std::unique_ptr<Fruit> apple_ptr2(fruit_factory.createObject(4, ""));
-  std::unique_ptr<Fruit> banana_ptr(fruit_factory.createObject(1));
-  std::unique_ptr<Fruit> pear_ptr(fruit_factory.createObject(2));
-  std::unique_ptr<Fruit> unknown_fruit_ptr(fruit_factory.createObject(3));
+  std::unique_ptr<Fruit> apple_ptr(fruit_factory.createObject("Apple"));
+  std::unique_ptr<Fruit> apple_ptr2(fruit_factory.createObject("Apple", 8));
+  std::unique_ptr<Fruit> apple_ptr3(
+      fruit_factory.createObject("Apple", std::string("awesome")));
+  std::unique_ptr<Fruit> banana_ptr(fruit_factory.createObject("Banana"));
+  std::unique_ptr<Fruit> pear_ptr(fruit_factory.createObject("Pear"));
+  std::unique_ptr<Fruit> unknown_fruit_ptr(
+      fruit_factory.createObject("Unknown"));
 
   // Check info
   apple_ptr->info();
