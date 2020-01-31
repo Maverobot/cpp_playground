@@ -1,5 +1,6 @@
 #include <variant>
 
+// This technique is also called magic switch
 template <typename... Ts, std::size_t... Is>
 std::variant<Ts...> get_impl(std::size_t index, std::index_sequence<Is...>,
                              const std::tuple<Ts...> &t) {
