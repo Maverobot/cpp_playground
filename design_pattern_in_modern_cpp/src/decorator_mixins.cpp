@@ -3,7 +3,7 @@
 #include <ostream>
 #include <sstream>
 /*
- * Curiously Recrring Template Pattern(CRTP) with Mixins
+ * Curiously Recurring Template Pattern(CRTP) with Mixins
  *
  * CRTP pattern refers to a general class of tehniques that consists of passing
  * a derived class as a template argument to one of its own base classes.
