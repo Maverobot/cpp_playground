@@ -1,3 +1,6 @@
 [submodule "cmake_scripts_example/cmake/common"]
 	path = cmake_scripts_example/cmake/common
 	url = https://github.com/Maverobot/cmake-scripts.git
+[submodule "tricks/third_party/magic_get"]
+	path = tricks/third_party/magic_get
+	url = https://github.com/apolukhin/magic_get.git
