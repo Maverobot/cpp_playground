@@ -1,11 +1,14 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(tricks)
 
-set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 add_executable(indices_trick src/indices_trick.cpp)
 target_include_directories(indices_trick PUBLIC include)
+target_compile_features(indices_trick PRIVATE cxx_std_17)
 
 add_executable(unwrap_reference src/unwrap_reference.cpp)
+target_compile_features(unwrap_reference PRIVATE cxx_std_17)
+
+add_executable(magic_get_example src/magic_get_example.cpp)
+target_include_directories(magic_get_example
+                           PRIVATE include third_party/magic_get/include)
+target_compile_features(magic_get_example PRIVATE cxx_std_17)
