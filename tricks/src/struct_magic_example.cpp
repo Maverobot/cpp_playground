@@ -29,13 +29,16 @@ int main() {
   Data v1{100., 11., 21., 3};
   Data v2{200., 12., 22., 5};
 
+  std::cout << "v1: " << v1 << std::endl;
+  std::cout << "v2: " << v2 << std::endl;
+
   auto v1_double =
       struct_magic::transform([](const auto &v) { return v * 2; }, v1);
-  std::cout << "vi_double: " << v1_double << std::endl;
+  std::cout << "v1 * 2: " << v1_double << std::endl;
 
-  // auto v3 = struct_magic::transform(
-  //     [](const auto &v1, const auto &v2) { return v1 + v2; }, v1, v2);
-  // std::cout << "v3: " << v3 << std::endl;
+  auto v3 = struct_magic::transform(
+      [](const auto &a, const auto &b) { return a + b; }, v1, v2);
+  std::cout << "v3 = v1 + v2: " << v3 << std::endl;
 
   // std::cout << res << std::endl;
 }

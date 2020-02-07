@@ -8,7 +8,7 @@ target_compile_features(indices_trick PRIVATE cxx_std_17)
 add_executable(unwrap_reference src/unwrap_reference.cpp)
 target_compile_features(unwrap_reference PRIVATE cxx_std_17)
 
-add_executable(magic_get_example src/magic_get_example.cpp)
-target_include_directories(magic_get_example
+add_executable(struct_magic_example src/struct_magic_example.cpp)
+target_include_directories(struct_magic_example
                            PRIVATE include third_party/magic_get/include)
-target_compile_features(magic_get_example PRIVATE cxx_std_17)
+target_compile_features(struct_magic_example PRIVATE cxx_std_14)
