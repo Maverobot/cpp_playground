@@ -39,7 +39,7 @@ template <typename T> struct value_match {
 
 template <typename Tuple, typename T>
 int getIndexByValue(Tuple &&tup, T &&value) {
-  auto flags = indices_trick_std::execute_all(
+  auto flags = indices_trick_std::simple_test::execute_all(
       value_match(std::forward<T>(value)), std::forward<Tuple>(tup));
   auto iter =
       std::find_if(flags.cbegin(), flags.cend(), [](auto &v) { return v; });
@@ -47,6 +47,13 @@ int getIndexByValue(Tuple &&tup, T &&value) {
     return std::distance(flags.cbegin(), iter);
   }
   return -1;
+}
+
+template <typename T, T... ints>
+void print_sequence(std::integer_sequence<T, ints...> int_seq) {
+  std::cout << "The sequence of size " << int_seq.size() << ": ";
+  ((std::cout << ints << ' '), ...);
+  std::cout << '\n';
 }
 
 int main(int argc, char *argv[]) {
@@ -63,12 +70,25 @@ int main(int argc, char *argv[]) {
   std::cout << "Indices trick with own indices builder: " << res1 << std::endl;
 
   // Indices trick with std::make_index_sequence, std::index_sequence
-  auto res2 = indices_trick_std::execute_all(get_type_size{}, tup);
+  auto res2 = indices_trick_std::simple_test::execute_all(get_type_size{}, tup);
   std::cout << "Indices trick with std header <utility>: " << res2 << std::endl;
 
   // Get index of the matching value
-  std::cout << "The index of the tuple having the matching value is: "
+  std::cout << "The index of the tuple having the matching value 0.99 is: "
             << getIndexByValue(tup, 0.99f) << std::endl;
+
+  // Print tuple
+  std::cout << "Tuple (strangely in reverse order): ";
+  indices_trick_std::execute_all(
+      [](const auto &element) {
+        std::cout << element << " ";
+        return nullptr;
+      },
+      tup);
+  std::cout << std::endl;
+
+  // print sequence
+  print_sequence(std::make_index_sequence<4>());
 
   return 0;
 }
