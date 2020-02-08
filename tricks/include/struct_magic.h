@@ -8,16 +8,18 @@
 namespace struct_magic {
 
 namespace detail {
-template <bool...> struct bool_pack;
-template <bool... bs>
-// if any are false, they'll be shifted in the second version, so types won't
-// match
-using all_true_impl =
-    std::is_same<bool_pack<bs..., true>, bool_pack<true, bs...>>;
-template <typename... Ts> using all_true = detail::all_true_impl<Ts::value...>;
 
 template <size_t idx, typename... Ts>
 using get_nth_type = std::tuple_element_t<idx, std::tuple<Ts...>>;
+
+template <typename... Conds> struct all_true : std::true_type {};
+template <typename Cond, typename... Conds>
+struct all_true<Cond, Conds...>
+    : std::conditional<Cond::value, all_true<Conds...>, std::false_type>::type {
+};
+
+template <typename... Ts>
+struct all_same : all_true<std::is_same<get_nth_type<0, Ts...>, Ts>...> {};
 
 template <size_t index, typename Func, typename... Ts>
 auto transform(Func f, Ts &&... input) {
@@ -29,15 +31,11 @@ auto transform(Func f, std::index_sequence<indices...>, Ts &&... input) {
   return std::decay_t<get_nth_type<0, Ts...>>{
       transform<indices>(f, std::forward<Ts>(input)...)...};
 }
-
 } // namespace detail
 
-template <typename... Ts>
-using all_same =
-    detail::all_true<std::is_same<detail::get_nth_type<0, Ts...>, Ts...>>;
-
 // Execute function which transforms a "list" of tuples into one tuple
-template <typename Func, typename... Ts>
+template <typename Func, typename... Ts,
+          typename = std::enable_if_t<detail::all_same<Ts...>::value, int>>
 auto transform(Func f, Ts &&... input) {
   return detail::transform(
       f,

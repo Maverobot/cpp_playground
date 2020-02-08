@@ -29,6 +29,11 @@ int main() {
   Data v1{100., 11., 21., 3};
   Data v2{200., 12., 22., 5};
 
+  std::cout << struct_magic::detail::all_same<int, double, double>::value
+            << std::endl;
+  std::cout << struct_magic::detail::all_same<int, int, int>::value
+            << std::endl;
+
   std::cout << "v1: " << v1 << std::endl;
   std::cout << "v2: " << v2 << std::endl;
 
