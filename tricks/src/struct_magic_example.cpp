@@ -6,6 +6,8 @@
 #include <iterator>
 #include <string>
 
+#include <Eigen/Eigen>
+
 struct get_type_size {
   template <typename T> int operator()(T &&) const { return sizeof(T); }
 };
@@ -15,6 +17,10 @@ struct Data {
   double velocity;
   double acceleration;
   int some_integer;
+
+  Eigen::Matrix<double, 1, 3> vec{1,0,1};
+
+  void foo() {};
 };
 
 template <typename T, size_t n>
