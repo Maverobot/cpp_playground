@@ -2,18 +2,32 @@
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <mutex>
 #include <string>
 #include <thread>
 
-namespace realtime_exec {
+namespace {
+template <typename F, typename... Args>
+struct is_invocable
+    : std::is_constructible<std::function<void(Args...)>,
+                            std::reference_wrapper<typename std::remove_reference<F>::type>> {};
+}  // namespace
+
+namespace realtime_executor {
 
 template <typename Data>
 class RealtimeExecutor {
  public:
-  RealtimeExecutor() = default;
+  RealtimeExecutor() = delete;
+
+  template <typename F, typename = std::enable_if_t<is_invocable<F, Data>::value>>
+  RealtimeExecutor(F f) {
+    keep_running_ = true;
+    thread_ = std::thread(&RealtimeExecutor::execution_loop<F>, this, f);
+  }
 
   /// Destructor
   ~RealtimeExecutor() {
@@ -24,12 +38,6 @@ class RealtimeExecutor {
     if (thread_.joinable()) {
       thread_.join();
     }
-  }
-
-  template <typename F, typename = std::enable_if_t<std::is_invocable_v<F, Data>>>
-  void init(F f) {
-    keep_running_ = true;
-    thread_ = std::thread(&RealtimeExecutor::execution_loop<F>, this, f);
   }
 
   void execute(Data data) {
@@ -82,4 +90,4 @@ class RealtimeExecutor {
 template <class Data>
 using RealtimeExecutorSharedPtr = std::shared_ptr<RealtimeExecutor<Data>>;
 
-}  // namespace realtime_exec
+}  // namespace realtime_executor
