@@ -3,3 +3,9 @@ project(lock_free_structure)
 
 add_executable(hello_lock_free src/hello_lock_free.cpp)
 target_compile_features(hello_lock_free PRIVATE cxx_std_17)
+
+find_package(Threads REQUIRED)
+add_executable(triple_buffer_example src/triple_buffer_example.cpp)
+target_include_directories(triple_buffer_example PRIVATE include)
+target_link_libraries(triple_buffer_example Threads::Threads)
+target_compile_features(triple_buffer_example PRIVATE cxx_std_17)
