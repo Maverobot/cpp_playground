@@ -38,15 +38,13 @@ class TripleBuffer {
   TripleBuffer(TripleBuffer&& other) = delete;
   TripleBuffer& operator=(TripleBuffer& other) = delete;
 
-  operator T() const noexcept { return load(); }
-
-  operator T() const volatile noexcept { return load(); }
+  operator T() const noexcept { return instant_load(); }
+  operator T() const volatile noexcept { return instant_load(); }
 
   T operator=(T i) noexcept {
     store(i);
     return i;
   }
-
   T operator=(T i) volatile noexcept {
     store(i);
     return i;
@@ -63,17 +61,28 @@ class TripleBuffer {
     stale_.clear();
   }
 
-  T load() const {
+  T wait_load() const {
     // Load value from "present"
     T val = *present_.load();
 
-    // TODO: this wait should be fixed
+    // TODO: try to wait for a valid "present" instead of a "ready"
     // Wait until a new value was stored in "ready"
     while (stale_.test_and_set())
       ;
 
     // Swap "ready" and "present"
     present_ = ready_.exchange(present_);
+    return val;
+  }
+
+  T instant_load() const {
+    // Load value from "present"
+    T val = *present_.load();
+
+    // If there is a new "ready" value, swap "ready" and "present"
+    if (!stale_.test_and_set()) {
+      present_ = ready_.exchange(present_);
+    }
     return val;
   }
 
