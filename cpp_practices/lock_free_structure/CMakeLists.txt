@@ -9,3 +9,8 @@ add_executable(triple_buffer_so_example src/triple_buffer_so_example.cpp)
 target_include_directories(triple_buffer_so_example PRIVATE include)
 target_link_libraries(triple_buffer_so_example Threads::Threads)
 target_compile_features(triple_buffer_so_example PRIVATE cxx_std_17)
+
+add_executable(triple_buffer_example src/triple_buffer_example.cpp)
+target_include_directories(triple_buffer_example PRIVATE include)
+target_link_libraries(triple_buffer_example Threads::Threads)
+target_compile_features(triple_buffer_example PRIVATE cxx_std_17)
