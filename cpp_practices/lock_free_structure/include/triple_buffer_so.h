@@ -1,5 +1,21 @@
 #pragma once
-// https://codereview.stackexchange.com/q/163810/216881
+/*
+  Reference: https://codereview.stackexchange.com/q/163810/216881
+
+  In a producer-consumer scenario sometimes we have to deal with the producer being much faster than
+  consumer. The data loss is unavoidable, and we are OK with it, as long as the consumer always has
+  the most recent data.
+
+  The answer is triple buffering. Endow the system with three buffers, which assume the roles of
+  being presented, ready, and inprogress, and let them change their roles according to the rules:
+
+  1. Once the presented buffer is completely presented, swap roles with ready.
+  2. Once the inprogress buffer is completely produced, swap roles with ready.
+
+  It is possible (unlikely but still possible) for producer to fall behind. Consumer must detect
+  such situation, and not present a stale buffer. In other words, the presented/ready swap shall
+  happen only if ready has been updated since the last swap.
+ */
 
 #include <atomic>
 #include <thread>

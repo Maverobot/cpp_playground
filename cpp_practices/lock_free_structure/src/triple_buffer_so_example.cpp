@@ -2,7 +2,7 @@
 #include <iostream>
 #include <thread>
 
-#include <triple_buffer.h>
+#include <triple_buffer_so.h>
 
 struct buffer {
   int id;
