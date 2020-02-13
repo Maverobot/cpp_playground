@@ -62,16 +62,16 @@ class TripleBuffer {
   }
 
   T wait_load() const {
-    // Load value from "present"
-    T val = *present_.load();
-
-    // TODO: try to wait for a valid "present" instead of a "ready"
     // Wait until a new value was stored in "ready"
     while (stale_.test_and_set())
       ;
 
     // Swap "ready" and "present"
     present_ = ready_.exchange(present_);
+
+    // Load value from "present"
+    T val = *present_.load();
+
     return val;
   }
 
