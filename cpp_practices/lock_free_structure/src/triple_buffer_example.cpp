@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
 
   for (size_t i = 0; i < 100; i++) {
     buf = i;
-    std::this_thread::sleep_for(20ms);
+    std::this_thread::sleep_for(200ms);
   }
 
   std::this_thread::sleep_for(1s);
