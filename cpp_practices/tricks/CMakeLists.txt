@@ -6,7 +6,7 @@ target_include_directories(indices_trick PUBLIC include)
 target_compile_features(indices_trick PRIVATE cxx_std_17)
 
 add_executable(unwrap_reference src/unwrap_reference.cpp)
-target_compile_features(unwrap_reference PRIVATE cxx_std_14)
+target_compile_features(unwrap_reference PRIVATE cxx_std_17)
 
 add_executable(defer src/defer.cpp)
 target_compile_features(defer PRIVATE cxx_std_17)
