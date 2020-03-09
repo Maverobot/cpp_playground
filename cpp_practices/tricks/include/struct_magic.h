@@ -22,13 +22,14 @@ template <typename... Ts>
 struct all_same : all_true<std::is_same<get_nth_type<0, Ts...>, Ts>...> {};
 
 template <size_t index, typename Func, typename... Ts>
-auto transform(Func f, Ts&&... input) {
-  return f(boost::pfr::get<index>(std::forward<Ts>(input))...);
+auto transform(Func&& f, Ts&&... input) {
+  return std::forward<Func>(f)(boost::pfr::get<index>(std::forward<Ts>(input))...);
 }
 
 template <typename Func, size_t... indices, typename... Ts>
-auto transform(Func f, std::index_sequence<indices...>, Ts&&... input) {
-  return std::decay_t<get_nth_type<0, Ts...>>{transform<indices>(f, std::forward<Ts>(input)...)...};
+auto transform(Func&& f, std::index_sequence<indices...>, Ts&&... input) {
+  return std::decay_t<get_nth_type<0, Ts...>>{
+      transform<indices>(std::forward<Func>(f), std::forward<Ts>(input)...)...};
 }
 
 template <typename Op, typename Struct, typename std::size_t... Is>
@@ -36,7 +37,7 @@ void apply_dispatch(Op&& op, Struct&& s, std::index_sequence<Is...>) {
   // TODO: in c++17 ((void) foo(std::forward<Args>(args)), ...);
   int dummy[] = {0,
                  ((void)std::forward<Op>(op)(boost::pfr::get<Is>(std::forward<Struct>(s))), 0)...};
-}  // namespace detail
+}
 
 }  // namespace detail
 
@@ -44,9 +45,9 @@ void apply_dispatch(Op&& op, Struct&& s, std::index_sequence<Is...>) {
 template <typename Func,
           typename... Ts,
           typename = std::enable_if_t<detail::all_same<Ts...>::value, int>>
-auto transform(Func f, Ts&&... input) {
+auto transform(Func&& f, Ts&&... input) {
   return detail::transform(
-      f,
+      std::forward<Func>(f),
       std::make_index_sequence<
           boost::pfr::tuple_size<std::decay_t<detail::get_nth_type<0, Ts...>>>::value>(),
       std::forward<Ts>(input)...);
