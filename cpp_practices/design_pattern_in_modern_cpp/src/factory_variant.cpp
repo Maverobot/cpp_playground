@@ -2,79 +2,91 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <sstream>
+#include <string>
+#include <string_view>
 #include <variant>
+
+#include "nameof.hpp"
 
 /**
  * Factory pattern with variant
  **/
 
-// Behavior on unknown type is throwing exception
-template <typename IdentifierType, typename ProductVariant>
-class FactoryErrorException {
- protected:
-  static ProductVariant onUnknownType(const IdentifierType& id) {
-    throw std::invalid_argument("Unknown object type passed to Factory");
-  }
-};
-
-// Default behavior on unknown type is returning nullptr
-
-template <typename ProductVariant,
-          typename IdentifierType,
-          typename ProductCreator = std::function<ProductVariant()>,
-          template <typename, typename> class FactoryErrorPolicy = FactoryErrorException>
-class Factory : private FactoryErrorPolicy<IdentifierType, ProductVariant> {
+template <typename ProductVariant>
+class Factory {
  public:
-  Factory() = default;
-  bool registerCreator(const IdentifierType& id, ProductCreator creator) {
-    return associations_.insert({id, creator}).second;
-  };
-  bool unregisterCreator(const IdentifierType& id) { return associations_.erase(id) == 1; }
+  using IdentifierType = std::string;
+  using ProductCreator = std::function<ProductVariant()>;
+
+  Factory() { MapCreator<ProductVariant>()(associations_); }
+
   ProductVariant createObject(const IdentifierType& id) {
     auto i = associations_.find(id);
     if (i != associations_.end()) {
       return (i->second)();
     }
-    return ErrorPolicy::onUnknownType(id);
+
+    std::ostringstream oss;
+    oss << "Unknown object type ID " << id << ". ";
+    oss << "Registed type IDs are: ";
+    for (const auto& pair : associations_) {
+      oss << "\n\t" << pair.first;
+    }
+    throw std::invalid_argument(oss.str());
   }
 
  private:
   using AssocMap = std::map<IdentifierType, ProductCreator>;
-  using ErrorPolicy = FactoryErrorPolicy<IdentifierType, ProductVariant>;
   AssocMap associations_;
+
+  template <typename... T>
+  struct MapCreator;
+  template <typename... T>
+  struct MapCreator<std::variant<T...>> {
+    void operator()(AssocMap& map) { ((void)insert<T>(map), ...); };
+
+    template <typename NewT>
+    void insert(AssocMap& map) {
+      map.insert({std::string(nameof::nameof_type<NewT>()), [] { return NewT(); }});
+    }
+
+    // Remove namespace
+    std::string getBaseName(const std::string_view& name) {
+      return std::string(name.substr(name.find_last_of(':') + 1));
+    }
+  };
 };
 
 // Example dummy classes
-struct Fruit {
-  virtual void info() const { std::cout << "This is an abstract fruit" << std::endl; }
+struct Apple {
+  void info() const { std::cout << "This is an apple" << std::endl; }
+};
+struct Banana {
+  void info() const { std::cout << "This is a banana" << std::endl; }
+};
+struct Pear {
+  void info() const { std::cout << "This is a pear" << std::endl; }
 };
 
-struct Apple : Fruit {
-  void info() const override { std::cout << "This is an apple" << std::endl; }
+namespace fruit_ns {
+struct Apple {
+  void info() const { std::cout << "This is an apple in fruit_ns" << std::endl; }
 };
-struct Banana : Fruit {
-  void info() const override { std::cout << "This is a Banana" << std::endl; }
-};
-struct Pear : Fruit {
-  void info() const override { std::cout << "This is a Pear" << std::endl; }
-};
+}  // namespace fruit_ns
 
 int main(int argc, char* argv[]) {
-  using Fruit = std::variant<Apple, Banana, Pear>;
+  using Fruit = std::variant<Apple, Banana, Pear, fruit_ns::Apple>;
 
   // Prepare factory
-  Factory<Fruit, int> fruit_factory;
-  fruit_factory.registerCreator(0, []() -> Apple { return Apple(); });
-  fruit_factory.registerCreator(1, []() -> Banana { return Banana(); });
-  fruit_factory.registerCreator(2, []() -> Pear { return Pear(); });
+  Factory<Fruit> fruit_factory;
 
   // Create apple, banana, pear and some unknown fruit
-  Fruit apple(fruit_factory.createObject(0));
-  Fruit banana(fruit_factory.createObject(1));
-  Fruit pear(fruit_factory.createObject(2));
-  // Fruit unknown_fruit(fruit_factory.createObject(3));
+  Fruit apple(fruit_factory.createObject("Apple"));
+  Fruit banana(fruit_factory.createObject("Banana"));
+  Fruit pear(fruit_factory.createObject("Pear"));
+  Fruit apple_in_ns(fruit_factory.createObject("fruit_ns::Apple"));
 
-  //
   constexpr auto info = [](const auto& fruit) {
     std::visit([](const auto& f) { f.info(); }, fruit);
     ;
@@ -84,14 +96,9 @@ int main(int argc, char* argv[]) {
   info(apple);
   info(banana);
   info(pear);
+  info(apple_in_ns);
 
-  // if (!unknown_fruit) {
-  //   std::cout << "This fruit does not exist." << std::endl;
-  // }
-
-  // Factory with exception
-  // Factory<Fruit, int, std::function<Fruit*()>, FactoryErrorException> fruit_factory_exc;
-  // std::unique_ptr<Fruit> unknown_fruit2_ptr(fruit_factory_exc.createObject(99));
+  Fruit unknown_fruit(fruit_factory.createObject("SomeUnknowFruit"));
 
   return 0;
 }
