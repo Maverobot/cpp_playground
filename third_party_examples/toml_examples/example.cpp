@@ -6,24 +6,18 @@ int main(int argc, char* argv[]) {
     printf("Usage: %s path_to_toml_file\n", argv[0]);
     return 1;
   }
-  auto data = toml::parse(argv[1]);
+  const auto data = toml::parse(argv[1]);
 
-  // find a value with the specified type from a table
-  std::string title = toml::find<std::string>(data, "title");
+  const auto& general = toml::find<toml::table>(data, "General");
+  const auto& devices_data = toml::find<std::vector<toml::table>>(data, "Devices");
 
-  // convert the whole array into any container automatically
-  std::vector<int> nums = toml::find<std::vector<int>>(data, "nums");
+  std::cout << "General/iterations: " << general.at("iterations") << "\n";
 
-  // access with STL-like manner
-  if (!data.contains("a") || !data.at("a").contains("b")) {
-    data["a"]["b"] = "c";
+  std::cout << "Devices data: \n";
+  for (const toml::table& device_data : devices_data) {
+    std::cout << "Device ID " << device_data.at("id") << " - param " << device_data.at("param")
+              << "\n";
   }
-
-  // pass a fallback
-  std::string name = toml::find_or<std::string>(data, "name", "not found");
-
-  // width-dependent formatting
-  std::cout << std::setw(80) << data << std::endl;
 
   return 0;
 }

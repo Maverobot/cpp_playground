@@ -1,2 +1,14 @@
-title = "title for example"
-nums = [0, 1, 3, 5 , 7]
+[General]
+iterations = 1000
+
+[[Devices]]
+id = "SimpleDevice"
+param = 0
+
+[[Devices]]
+id = "NormalDevice"
+param = 1
+
+[[Devices]]
+id = "AwesomeDevice"
+param = 99
