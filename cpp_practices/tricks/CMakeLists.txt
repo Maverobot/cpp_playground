@@ -11,6 +11,9 @@ target_compile_features(unwrap_reference PRIVATE cxx_std_17)
 add_executable(defer src/defer.cpp)
 target_compile_features(defer PRIVATE cxx_std_17)
 
+add_executable(exit_scope src/exit_scope.cpp)
+target_compile_features(exit_scope PRIVATE cxx_std_17)
+
 find_package(Eigen3 REQUIRED)
 
 # Download magic_get
