@@ -13,18 +13,12 @@ A collection of random coding with c++
 
 <!-- markdown-toc end -->
 
-## Graphical Interface
-* imgui_example
-* impui_example
-* matplotlib_cpp
-* ncurses_keyboard
-
 ## Package Managers
 * conan_catkin_example
 * conan_cmake_example
 * hunter_cmake_example
 
-## Self-brewed Utilities
+## Utils
 * csv_reader
 * realtime_executor
 * unix_domain_socket
@@ -44,3 +38,8 @@ A collection of random coding with c++
 * libtorch_example
 * nameof
 * ranges_v3_examples/
+* graphical_interface
+  - imgui_example
+  - impui_example
+  - matplotlib_cpp
+  - ncurses_keyboard
