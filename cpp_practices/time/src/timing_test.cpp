@@ -23,6 +23,6 @@ TEST_CASE("timing") {
   deadline.tv_nsec = 1000000;  // 1ms
 
   using namespace std::chrono_literals;
-  BENCHMARK("clock_gettime") { return clock_nanosleep(CLOCK_REALTIME, 0, &deadline, NULL); };
+  BENCHMARK("clock_nanosleep") { return clock_nanosleep(CLOCK_REALTIME, 0, &deadline, NULL); };
   BENCHMARK("this_thread::sleep_for") { return std::this_thread::sleep_for(1ms); };
 }
