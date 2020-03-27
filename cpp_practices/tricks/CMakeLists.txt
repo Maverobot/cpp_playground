@@ -37,5 +37,5 @@ endif()
 
 add_executable(struct_magic_example src/struct_magic_example.cpp)
 target_include_directories(struct_magic_example PRIVATE ${EIGEN3_INCLUDE_DIR})
-target_link_libraries(struct_magic_example struct_magic)
+target_link_libraries(struct_magic_example PRIVATE struct_magic)
 target_compile_features(struct_magic_example PRIVATE cxx_std_14)
