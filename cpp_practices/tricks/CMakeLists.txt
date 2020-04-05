@@ -1,9 +1,15 @@
 cmake_minimum_required(VERSION 3.11)
 project(tricks)
 
+option(ENABLE_TESTING "Enable testing for this project" ON)
+
 add_executable(indices_trick src/indices_trick.cpp)
 target_include_directories(indices_trick PUBLIC include)
 target_compile_features(indices_trick PRIVATE cxx_std_17)
+
+add_executable(delegate_example src/delegate_example.cpp)
+target_include_directories(delegate_example PUBLIC include)
+target_compile_features(delegate_example PRIVATE cxx_std_17)
 
 add_executable(unwrap_reference src/unwrap_reference.cpp)
 target_compile_features(unwrap_reference PRIVATE cxx_std_17)
@@ -39,3 +45,9 @@ add_executable(struct_magic_example src/struct_magic_example.cpp)
 target_include_directories(struct_magic_example PRIVATE ${EIGEN3_INCLUDE_DIR})
 target_link_libraries(struct_magic_example PRIVATE struct_magic)
 target_compile_features(struct_magic_example PRIVATE cxx_std_14)
+
+# Test
+if(ENABLE_TESTING)
+  enable_testing()
+  add_subdirectory(test)
+endif()
