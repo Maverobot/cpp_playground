@@ -22,6 +22,8 @@ class GridWorld {
     auto [row_idx_delta, col_idx_delta] = mapAction(action);
     if (isValid(row_idx_delta, col_idx_delta)) {
       board_.movePiece("Player", row_idx_delta, col_idx_delta);
+    } else {
+      std::cout << "invalid move\n";
     }
     return evaluate();
   }
