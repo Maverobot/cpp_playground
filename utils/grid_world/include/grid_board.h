@@ -46,6 +46,15 @@ class GridBoard {
     }
   }
 
+  std::vector<std::vector<int>> state() {
+    std::vector<std::vector<int>> state;
+    for (const auto& piece : pieces_) {
+      std::vector<int> state_p(size_ * size_, 0);
+      state_p.at(piece.row_idx * size_ + piece.col_idx) = 1;
+      state.push_back(state_p);
+    }
+    return state;
+  }
 
   void display() const {
     fort::char_table table;

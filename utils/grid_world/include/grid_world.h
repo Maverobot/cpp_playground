@@ -15,7 +15,7 @@ class GridWorld {
     board_.addPiece("Goal", '+', 3, 3);
   };
 
-  Reward step(Action action) {
+  auto step(Action action) {
     if (status_ != Status::ongoing) {
       throw std::runtime_error("cannot step a finished game.");
     }
@@ -25,7 +25,7 @@ class GridWorld {
     } else {
       std::cout << "invalid move\n";
     }
-    return evaluate();
+    return std::pair(evaluate(), board_.state());
   }
 
   void display() const {
