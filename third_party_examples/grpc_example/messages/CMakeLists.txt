@@ -17,9 +17,8 @@ foreach(proto_file ${MESSAGES_PROTOS})
   add_custom_command(
     OUTPUT ${generated_files}
     COMMAND
-      protobuf::protoc --cpp_out ${CMAKE_CURRENT_BINARY_DIR} --grpc_out
-      ${CMAKE_CURRENT_BINARY_DIR} -I ${CMAKE_CURRENT_SOURCE_DIR}
-      --plugin=protoc-gen-grpc=$<TARGET_FILE:gRPC::grpc_cpp_plugin>
+      protobuf::protoc --cpp_out ${CMAKE_CURRENT_BINARY_DIR} --grpc_out ${CMAKE_CURRENT_BINARY_DIR}
+      -I ${CMAKE_CURRENT_SOURCE_DIR} --plugin=protoc-gen-grpc=$<TARGET_FILE:gRPC::grpc_cpp_plugin>
       ${proto_file_abs}
     COMMENT "Generating ${generated_files} from ${proto_file}"
     VERBATIM)

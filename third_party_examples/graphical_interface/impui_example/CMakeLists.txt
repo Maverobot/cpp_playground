@@ -14,9 +14,8 @@ if(NOT impui_POPULATED)
 endif()
 
 add_executable(simple_plot_example src/simple_plot_example.cpp)
-target_include_directories(
-  simple_plot_example PRIVATE ${impui_SOURCE_DIR}/imgui
-                              ${impui_SOURCE_DIR}/include)
+target_include_directories(simple_plot_example PRIVATE ${impui_SOURCE_DIR}/imgui
+                                                       ${impui_SOURCE_DIR}/include)
 
 target_link_libraries(simple_plot_example ImPui::impui)
 

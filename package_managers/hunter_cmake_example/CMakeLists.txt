@@ -7,19 +7,15 @@ if(NOT EXISTS "${CMAKE_BINARY_DIR}/HunterGate.cmake")
     STATUS
       "Downloading HunterGate.cmake from https://raw.githubusercontent.com/hunter-packages/gate/master/cmake/HunterGate.cmake"
   )
-  file(
-    DOWNLOAD
-    "https://raw.githubusercontent.com/hunter-packages/gate/master/cmake/HunterGate.cmake"
-    "${CMAKE_BINARY_DIR}/HunterGate.cmake")
+  file(DOWNLOAD
+       "https://raw.githubusercontent.com/hunter-packages/gate/master/cmake/HunterGate.cmake"
+       "${CMAKE_BINARY_DIR}/HunterGate.cmake")
 endif()
 include(${CMAKE_BINARY_DIR}/HunterGate.cmake)
 huntergate(
-  URL
-  "https://github.com/cpp-pm/hunter/archive/v0.23.215.tar.gz"
-  SHA1
-  "6969b8330f8db140196d567dd0c570f8789c3c4e"
-  LOCAL # This tells hunter to search for cmake/Hunter/config.cmake as local
-        # configuration
+  URL "https://github.com/cpp-pm/hunter/archive/v0.23.215.tar.gz"
+  SHA1 "6969b8330f8db140196d567dd0c570f8789c3c4e"
+  LOCAL # This tells hunter to search for cmake/Hunter/config.cmake as local configuration
 )
 
 project(download-dlib)

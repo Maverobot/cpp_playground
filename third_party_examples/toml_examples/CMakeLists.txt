@@ -12,8 +12,7 @@ ExternalProject_Add(
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
   INSTALL_COMMAND ""
-  EXCLUDE_FROM_ALL TRUE
-)
+  EXCLUDE_FROM_ALL TRUE)
 
 add_library(toml11 INTERFACE)
 target_include_directories(toml11 INTERFACE ${CMAKE_SOURCE_DIR}/3rdparty/toml11)
