@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.11)
 project(ranges_v3_examples)
 
-set(CMAKE_BUILD_TYPE Release)
-
 include(FetchContent)
 FetchContent_Declare(
   range-v3

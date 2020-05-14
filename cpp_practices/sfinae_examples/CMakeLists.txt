@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.4)
 project(sfinae_examples)
 
-set(CMAKE_BUILD_TYPE Release)
-
 # Defines macro for adding examples
 macro(add_example name)
   add_executable(${name} src/${name}.cpp)

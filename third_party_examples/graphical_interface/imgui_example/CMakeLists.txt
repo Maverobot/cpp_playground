@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.4)
 project(imgui_example)
 
-set(CMAKE_BUILD_TYPE Release)
-
 find_package(glfw3 REQUIRED)
 find_package(OpenGL)
 

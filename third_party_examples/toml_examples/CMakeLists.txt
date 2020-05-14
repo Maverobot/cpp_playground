@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.11)
 project(toml_examples)
 
-set(CMAKE_BUILD_TYPE Release)
-
 include(ExternalProject)
 ExternalProject_Add(
   toml
