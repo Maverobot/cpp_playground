@@ -17,6 +17,9 @@ target_compile_features(unwrap_reference PRIVATE cxx_std_17)
 add_executable(defer src/defer.cpp)
 target_compile_features(defer PRIVATE cxx_std_17)
 
+add_executable(is_valid src/is_valid.cpp)
+target_compile_features(is_valid PRIVATE cxx_std_17)
+
 add_executable(exit_scope src/exit_scope.cpp)
 target_include_directories(exit_scope PRIVATE include)
 target_compile_features(exit_scope PRIVATE cxx_std_17)
