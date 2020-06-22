@@ -14,6 +14,12 @@ endif()
 add_library(imgui_impl src/imgui_impl_glfw.cpp src/imgui_impl_opengl3.cpp)
 target_link_libraries(imgui_impl PRIVATE imgui glad glfw)
 
-add_executable(hello src/draw.cpp src/hello.cpp src/settings.cpp)
-target_include_directories(hello PRIVATE ${box2d-extern_SOURCE_DIR}/include)
-target_link_libraries(hello PRIVATE box2d glad imgui imgui_impl)
+add_library(box2dsim src/box2dsim.cpp src/draw src/settings.cpp)
+target_include_directories(box2dsim PUBLIC ${box2d-extern_SOURCE_DIR}/include)
+target_link_libraries(
+  box2dsim
+  PUBLIC box2d
+  PRIVATE glad imgui imgui_impl)
+
+add_executable(hello src/hello.cpp)
+target_link_libraries(hello PRIVATE box2dsim)
