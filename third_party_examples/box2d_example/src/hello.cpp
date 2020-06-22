@@ -31,4 +31,9 @@ int main(int, char**) {
 
   Box2DSim sim;
   sim.run(world);
+
+  /**
+   * TODO:
+   * 1. Expose step callback function to apply forces on dynamics bodys
+   */
 }
