@@ -1,5 +1,7 @@
 #include "box2dsim.h"
 
+#include <iostream>
+
 int main(int, char**) {
   b2World world(b2Vec2(0.0f, -10.0f));
 
@@ -29,11 +31,13 @@ int main(int, char**) {
 
   body->CreateFixture(&fixtureDef);
 
-  Box2DSim sim;
-  sim.run(world);
+  auto print_state = [&body] {
+    body->ApplyForceToCenter(b2Vec2(1.0f, 0), true);
+    b2Vec2 position = body->GetPosition();
+    float angle = body->GetAngle();
+    printf("%4.2f %4.2f %4.2f\n", position.x, position.y, angle);
+  };
 
-  /**
-   * TODO:
-   * 1. Expose step callback function to apply forces on dynamics bodys
-   */
+  Box2DSim sim;
+  sim.run(world, print_state);
 }
