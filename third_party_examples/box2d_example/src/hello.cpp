@@ -8,7 +8,7 @@
 
 // dear imgui: standalone example application for GLFW + OpenGL 3, using programmable pipeline
 // If you are new to dear imgui, see examples/README.txt and documentation at the top of imgui.cpp.
-// (GLFW is a cross-platform general purpose library for handling windows, inputs,
+// (GLFW is a cross-platform general purpose library for handling windows, inputs, //
 // OpenGL/Vulkan/Metal graphics context creation, etc.)
 
 #include <stdio.h>
@@ -61,11 +61,6 @@ static void glfw_error_callback(int error, const char* description) {
   fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 
-extern DebugDraw g_debugDraw;
-Settings settings;
-
-GLFWwindow* g_mainWindow = nullptr;
-
 int main(int, char**) {
   // Setup window
   glfwSetErrorCallback(glfw_error_callback);
@@ -90,10 +85,11 @@ int main(int, char**) {
 #endif
 
   // Create window with graphics context
-  g_mainWindow = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+OpenGL3 example", NULL, NULL);
-  if (g_mainWindow == NULL)
+  GLFWwindow* mainWindow =
+      glfwCreateWindow(1280, 720, "Dear ImGui GLFW+OpenGL3 example", NULL, NULL);
+  if (mainWindow == NULL)
     return 1;
-  glfwMakeContextCurrent(g_mainWindow);
+  glfwMakeContextCurrent(mainWindow);
   glfwSwapInterval(1);  // Enable vsync
 
   // Initialize OpenGL loader
@@ -132,10 +128,12 @@ int main(int, char**) {
   // ImGui::StyleColorsClassic();
 
   // Setup Platform/Renderer bindings
-  ImGui_ImplGlfw_InitForOpenGL(g_mainWindow, true);
+  ImGui_ImplGlfw_InitForOpenGL(mainWindow, true);
   ImGui_ImplOpenGL3_Init(glsl_version);
 
-  g_debugDraw.Create();
+  DebugDraw debugDraw;
+  Settings settings;
+  debugDraw.Create();
 
   // Our state
   bool show_demo_window = true;
@@ -143,7 +141,7 @@ int main(int, char**) {
   ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
   b2World world(b2Vec2(0.0f, -10.0f));
-  world.SetDebugDraw(&g_debugDraw);
+  world.SetDebugDraw(&debugDraw);
 
   // Ground body
   b2BodyDef groundBodyDef;
@@ -180,12 +178,12 @@ int main(int, char**) {
   std::chrono::duration<double> frameTime(0.0);
 
   // Main loop
-  while (!glfwWindowShouldClose(g_mainWindow)) {
+  while (!glfwWindowShouldClose(mainWindow)) {
     std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
 
-    glfwGetWindowSize(g_mainWindow, &g_camera.m_width, &g_camera.m_height);
+    glfwGetWindowSize(mainWindow, &debugDraw.camera.m_width, &debugDraw.camera.m_height);
     int bufferWidth, bufferHeight;
-    glfwGetFramebufferSize(g_mainWindow, &bufferWidth, &bufferHeight);
+    glfwGetFramebufferSize(mainWindow, &bufferWidth, &bufferHeight);
     glViewport(0, 0, bufferWidth, bufferHeight);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -194,9 +192,10 @@ int main(int, char**) {
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    if (g_debugDraw.m_showUI) {
+    if (debugDraw.m_showUI) {
       ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
-      ImGui::SetNextWindowSize(ImVec2(float(g_camera.m_width), float(g_camera.m_height)));
+      ImGui::SetNextWindowSize(
+          ImVec2(float(debugDraw.camera.m_width), float(debugDraw.camera.m_height)));
       ImGui::SetNextWindowBgAlpha(0.0f);
       ImGui::Begin("Overlay", nullptr,
                    ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs |
@@ -214,14 +213,14 @@ int main(int, char**) {
     flags += settings.m_drawJoints * b2Draw::e_jointBit;
     flags += settings.m_drawAABBs * b2Draw::e_aabbBit;
     flags += settings.m_drawCOMs * b2Draw::e_centerOfMassBit;
-    g_debugDraw.SetFlags(flags);
+    debugDraw.SetFlags(flags);
     world.DebugDraw();
-    g_debugDraw.Flush();
+    debugDraw.Flush();
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-    glfwSwapBuffers(g_mainWindow);
+    glfwSwapBuffers(mainWindow);
     glfwPollEvents();
 
     // Throttle to cap at 60Hz. This adaptive using a sleep adjustment. This could be improved by
@@ -241,12 +240,12 @@ int main(int, char**) {
   }
 
   // Cleanup
-  g_debugDraw.Destroy();
+  debugDraw.Destroy();
   ImGui_ImplOpenGL3_Shutdown();
   ImGui_ImplGlfw_Shutdown();
   ImGui::DestroyContext();
 
-  glfwDestroyWindow(g_mainWindow);
+  glfwDestroyWindow(mainWindow);
   glfwTerminate();
 
   return 0;

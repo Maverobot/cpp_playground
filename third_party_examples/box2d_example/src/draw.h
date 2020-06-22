@@ -27,6 +27,7 @@
 #include "GLFW/glfw3.h"
 #include "glad/gl.h"
 
+#include <string>
 #include "box2d/box2d.h"
 
 struct b2AABB;
@@ -35,29 +36,29 @@ struct GLRenderLines;
 struct GLRenderTriangles;
 struct GLFWwindow;
 
-//
-struct Camera {
-  Camera() {
-    m_center.Set(0.0f, 20.0f);
-    m_zoom = 1.0f;
-    m_width = 1280;
-    m_height = 800;
-  }
-
-  b2Vec2 ConvertScreenToWorld(const b2Vec2& screenPoint);
-  b2Vec2 ConvertWorldToScreen(const b2Vec2& worldPoint);
-  void BuildProjectionMatrix(float* m, float zBias);
-
-  b2Vec2 m_center;
-  float m_zoom;
-  int32 m_width;
-  int32 m_height;
-};
-
 // This class implements debug drawing callbacks that are invoked
 // inside b2World::Step.
 class DebugDraw : public b2Draw {
  public:
+  //
+  struct Camera {
+    Camera() {
+      m_center.Set(0.0f, 20.0f);
+      m_zoom = 1.0f;
+      m_width = 1280;
+      m_height = 800;
+    }
+
+    b2Vec2 ConvertScreenToWorld(const b2Vec2& screenPoint) const;
+    b2Vec2 ConvertWorldToScreen(const b2Vec2& worldPoint) const;
+    void BuildProjectionMatrix(float* m, float zBias) const;
+
+    b2Vec2 m_center;
+    float m_zoom;
+    int32 m_width;
+    int32 m_height;
+  };
+
   DebugDraw();
   ~DebugDraw();
 
@@ -89,14 +90,11 @@ class DebugDraw : public b2Draw {
 
   void Flush();
 
+  Camera camera;
   bool m_showUI;
   GLRenderPoints* m_points;
   GLRenderLines* m_lines;
   GLRenderTriangles* m_triangles;
 };
-
-extern DebugDraw g_debugDraw;
-extern Camera g_camera;
-extern GLFWwindow* g_mainWindow;
 
 #endif
