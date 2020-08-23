@@ -1,0 +1,2 @@
+add_executable(cart_pole_passive_simulation cart_pole_passive_simulation.cpp)
+target_link_libraries(cart_pole_passive_simulation PRIVATE drake::drake gflags)
