@@ -1,4 +1,10 @@
 cmake_minimum_required(VERSION 3.5.1)
+
+# pre-compiled version of drake was built with gcc-7 on ubuntu 18.04 Errors will happen with higher
+# version of gcc and clang
+set(CMAKE_C_COMPILER /usr/bin/gcc-7)
+set(CMAKE_CXX_COMPILER /usr/bin/g++-7)
+
 project(drake_examples)
 
 find_package(drake CONFIG REQUIRED)
