@@ -1,0 +1,15 @@
+* poll_examples
+** watch_std_io
+This is an example from the book /Linux System Programming/ by Robert Love.
+Running this, we get the following, as expected:
+#+BEGIN_SRC shell
+$ ./watch_std_io
+stdout is writable
+#+END_SRC
+
+Running it again, but this time redirecting a file into standard in, we see both events:
+#+BEGIN_SRC shell
+$./watch_std_io < ../CMakeLists.txt
+stdout is writable
+stdin is readable. The first 10 chars are: cmake_mini
+#+END_SRC
