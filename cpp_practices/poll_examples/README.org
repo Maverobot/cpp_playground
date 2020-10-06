@@ -13,3 +13,5 @@ $./watch_std_io < ../CMakeLists.txt
 stdout is writable
 stdin is readable. The first 10 chars are: cmake_mini
 #+END_SRC
+** epoll_input
+The orginal post is [[https://suchprogramming.com/epoll-in-3-easy-steps/][here]]. Run ~./epoll_input~ and type in some words to see the result.

@@ -8,3 +8,4 @@ macro(add_example name)
 endmacro()
 
 add_example(watch_std_io)
+add_example(epoll_input)
