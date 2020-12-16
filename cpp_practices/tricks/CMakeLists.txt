@@ -24,6 +24,9 @@ add_executable(exit_scope src/exit_scope.cpp)
 target_include_directories(exit_scope PRIVATE include)
 target_compile_features(exit_scope PRIVATE cxx_std_17)
 
+add_executable(type_erasure src/type_erasure.cpp)
+target_compile_features(type_erasure PRIVATE cxx_std_17)
+
 find_package(Eigen3 REQUIRED)
 
 # Download struct_magic if it cannot be found locally
