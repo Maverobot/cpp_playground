@@ -27,7 +27,7 @@ target_compile_features(exit_scope PRIVATE cxx_std_17)
 find_package(Eigen3 REQUIRED)
 
 # Download struct_magic if it cannot be found locally
-set(struct_magic_VERSION 0.1)
+set(struct_magic_VERSION 0.1.1)
 find_package(struct_magic ${struct_magic_VERSION} EXACT QUIET CONFIG)
 if(NOT struct_magic_FOUND)
   include(FetchContent)
