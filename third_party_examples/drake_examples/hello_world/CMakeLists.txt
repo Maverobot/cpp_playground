@@ -1,0 +1,6 @@
+
+add_executable(simple_continuous_time_system simple_continuous_time_system.cpp)
+target_link_libraries(simple_continuous_time_system PRIVATE drake::drake)
+
+add_executable(simple_discrete_time_system simple_discrete_time_system.cpp)
+target_link_libraries(simple_discrete_time_system PRIVATE drake::drake)
