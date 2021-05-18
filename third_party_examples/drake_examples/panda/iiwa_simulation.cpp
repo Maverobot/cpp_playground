@@ -5,6 +5,7 @@
 /// and lcmt_iiwa_command messages. It is intended to be a be a direct
 /// replacement for the KUKA iiwa driver and the actual robot hardware.
 
+#include <experimental/filesystem>
 #include <memory>
 
 #include <gflags/gflags.h>
@@ -31,6 +32,8 @@
 #include "iiwa_common.h"
 #include "iiwa_lcm.h"
 #include "kuka_torque_controller.h"
+
+namespace fs = std::experimental::filesystem;
 
 DEFINE_double(simulation_sec,
               std::numeric_limits<double>::infinity(),
@@ -63,9 +66,8 @@ int DoMain() {
 
   // Adds a plant.
   auto [plant, scene_graph] = multibody::AddMultibodyPlantSceneGraph(&builder, FLAGS_sim_dt);
-  const char* kModelPath =
-      "drake/manipulation/models/iiwa_description/urdf/iiwa14_polytope_collision.urdf";
-  const std::string urdf = (!FLAGS_urdf.empty() ? FLAGS_urdf : FindResourceOrThrow(kModelPath));
+  const char* kModelPath = "../panda/robots/panda_arm.urdf";
+  const std::string urdf = (!FLAGS_urdf.empty() ? FLAGS_urdf : fs::canonical(kModelPath).string());
   auto iiwa_instance = multibody::Parser(&plant, &scene_graph).AddModelFromFile(urdf);
   plant.WeldFrames(plant.world_frame(), plant.GetFrameByName("base"));
   plant.Finalize();
@@ -79,6 +81,9 @@ int DoMain() {
   // Since we welded the model to the world above, the only remaining joints
   // should be those in the arm.
   const int num_joints = plant.num_positions();
+  printf("num_joints = %d\n", num_joints);
+  printf("num_actuators = %d\n", plant.num_actuators());
+
   DRAKE_DEMAND(num_joints % kIiwaArmNumJoints == 0);
   const int num_iiwa = num_joints / kIiwaArmNumJoints;
 
