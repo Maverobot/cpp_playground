@@ -7,3 +7,7 @@ target_include_directories(sml INTERFACE 3rdParty/sml)
 add_executable(hello_world src/hello_world.cpp)
 target_include_directories(hello_world PRIVATE include)
 target_link_libraries(hello_world PRIVATE sml)
+
+add_executable(child_parent_events src/child_parent_events.cpp)
+target_include_directories(child_parent_events PRIVATE include)
+target_link_libraries(child_parent_events PRIVATE sml)
