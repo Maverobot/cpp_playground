@@ -1,5 +1,5 @@
-// $CXX -std=c++14 plant_uml.cpp
-// ./plant_uml_integration > example.uml && plantuml example.uml && feh -Z example.png
+// $CXX -std=c++17 plant_uml.cpp
+// ./dump_uml > hello.pu && plantuml . && feh -Z hello.png
 
 #include <cxxabi.h>
 #include <boost/sml.hpp>
@@ -30,13 +30,24 @@ std::string name() {
   return demangle(typeid(std::decay_t<T>).name());
 }
 
+template <class T>
+struct name_list_tuple {
+  static std::string value() {
+    static const std::string name_list = name<T>();
+    return name_list;
+  }
+};
+
 template <class... Ts>
-std::string name(std::tuple<Ts...> tup) {
-  const char* sep = "";
-  std::ostringstream oss;
-  (((oss << sep << demangle(typeid(std::decay_t<Ts>).name())), sep = ", "), ...);
-  return oss.str();
-}
+struct name_list_tuple<std::tuple<Ts...>> {
+  static std::string value() {
+    const char* sep = "";
+    std::ostringstream oss;
+    (((oss << sep << demangle(typeid(std::decay_t<Ts>).name())), sep = ", "), ...);
+    static const std::string name_list = oss.str();
+    return name_list;
+  }
+};
 
 namespace sml = boost::sml;
 
@@ -58,13 +69,25 @@ struct another_action {
   bool operator()(double input) { return false; }
 } another_action;
 
+struct subsub {
+  auto operator()() const noexcept {
+    using namespace sml;
+    // clang-format off
+    return make_transition_table(
+        *"subsub_idle"_s + event<e3> /action = "s1"_s,
+        "s1"_s + event<e4> / action = X
+    );
+    // clang-format on
+  }
+};
+
 struct sub {
   auto operator()() const noexcept {
     using namespace sml;
     // clang-format off
     return make_transition_table(
-        *"sub_idle"_s + event<e3> /action = "s1"_s,
-        "s1"_s + event<e4> / action = X
+        *"sub_idle"_s + event<e3> /action = state<subsub>,
+        "subsub"_s + event<e4> / action = X
     );
     // clang-format on
   }
@@ -181,7 +204,9 @@ void dump_transition(strset_t& substates_handled, int& starts) noexcept {
 
   if (has_action) {
     if constexpr (cleanable<typename T::action::type>::value) {
-      std::cout << " / " << name(typename clean_action_name<typename T::action::type>::type{});
+      std::cout
+          << " / "
+          << name_list_tuple<typename clean_action_name<typename T::action::type>::type>::value();
     } else {
       std::cout << " / " << boost::sml::aux::get_type_name<typename T::action::type>();
     }
