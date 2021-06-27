@@ -1,6 +1,8 @@
 // $CXX -std=c++17 plant_uml.cpp
 // ./dump_uml > hello.pu && plantuml . && feh -Z hello.png
 
+#include "sm_to_dump_example.h"
+
 #include <cxxabi.h>
 #include <boost/sml.hpp>
 #include <cassert>
@@ -10,6 +12,8 @@
 #include <sstream>
 #include <string>
 #include <typeinfo>
+
+namespace sml = boost::sml;
 
 inline std::string demangle(const char* name) {
   int status = -4;  // some arbitrary value to eliminate the compiler warning
@@ -31,15 +35,14 @@ std::string name() {
 }
 
 template <class T>
-struct name_list_tuple {
+struct tuple_types_to_string {
   static std::string value() {
     static const std::string name_list = name<T>();
     return name_list;
   }
 };
-
 template <class... Ts>
-struct name_list_tuple<std::tuple<Ts...>> {
+struct tuple_types_to_string<std::tuple<Ts...>> {
   static std::string value() {
     const char* sep = "";
     std::ostringstream oss;
@@ -49,67 +52,17 @@ struct name_list_tuple<std::tuple<Ts...>> {
   }
 };
 
-namespace sml = boost::sml;
-
-struct e1 {};
-struct e2 {};
-struct e3 {};
-struct e4 {};
-struct e5 {};
-
-struct guard {
-  bool operator()() const { return true; }
-} guard;
-
-struct action {
-  void operator()() {}
-} action;
-
-struct another_action {
-  bool operator()(double input) { return false; }
-} another_action;
-
-struct subsub {
-  auto operator()() const noexcept {
-    using namespace sml;
-    // clang-format off
-    return make_transition_table(
-        *"subsub_idle"_s + event<e3> /action = "s1"_s,
-        "s1"_s + event<e4> / action = X
-    );
-    // clang-format on
-  }
+template <typename T>
+struct flatten_tuple {
+  using type = T;
 };
-
-struct sub {
-  auto operator()() const noexcept {
-    using namespace sml;
-    // clang-format off
-    return make_transition_table(
-        *"sub_idle"_s + event<e3> /action = state<subsub>,
-        "subsub"_s + event<e4> / action = X
-    );
-    // clang-format on
-  }
+template <typename TupleHead, typename... TupleTail, typename... Ts>
+struct flatten_tuple<std::tuple<std::tuple<TupleHead, TupleTail...>, Ts...>> {
+  using type = typename flatten_tuple<
+      std::tuple<typename flatten_tuple<TupleHead>::type, TupleTail..., Ts...>>::type;
 };
-
-struct plant_uml {
-  auto operator()() const noexcept {
-    using namespace sml;
-    return make_transition_table(
-        // clang-format off
-        *"idle"_s + event<e1> = state<sub>,
-        "idle"_s + event<e5> = state<sub>,
-        state<sub> + event<e2> [ guard ] / (action, another_action)= "s2"_s,
-        "s2"_s + event<e3> [ guard ] = "idle"_s,
-        "s2"_s + event<e4> / action = X,
-
-        *"idle2"_s + event<e2> = "s17"_s,
-        "s17"_s + event<e3> = X
-        // clang-format on
-    );
-  }
-};
+template <typename T>
+using flatten_tuple_t = typename flatten_tuple<T>::type;
 
 template <typename>
 struct is_sub_state_machine : std::false_type {};
@@ -128,15 +81,23 @@ template <class... Ts>
 struct cleanable<boost::sml::front::seq_<boost::ext::sml::aux::zero_wrapper<Ts, void>...>>
     : std::true_type {};
 
+// clang-format off
+// sub --> s2 : e2 [guard] / seq<zero_wrapper<seq<zero_wrapper<action, void>, zero_wrapper<another_action, void> >, void>, zero_wrapper<special_action, void> >
+// sub1 --> s2 : e2 [guard] / seq<zero_wrapper<action, void>, zero_wrapper<another_action, void> >
+// sub2 --> s2 : e2 [guard] / action
+// clang-format on
+
 template <typename T>
 struct clean_action_name {
   using type = T;
 };
-
-template <class... Ts>
-struct clean_action_name<boost::sml::front::seq_<boost::ext::sml::aux::zero_wrapper<Ts, void>...>> {
-  using type = std::tuple<Ts...>;
+template <class TRest, class TEnd>
+struct clean_action_name<boost::sml::front::seq_<boost::ext::sml::aux::zero_wrapper<TRest, void>,
+                                                 boost::ext::sml::aux::zero_wrapper<TEnd, void>>> {
+  using type = std::tuple<typename clean_action_name<TRest>::type, TEnd>;
 };
+template <typename T>
+using clean_action_name_t = typename clean_action_name<T>::type;
 
 template <typename T>
 struct clean_state_name {
@@ -204,9 +165,9 @@ void dump_transition(strset_t& substates_handled, int& starts) noexcept {
 
   if (has_action) {
     if constexpr (cleanable<typename T::action::type>::value) {
-      std::cout
-          << " / "
-          << name_list_tuple<typename clean_action_name<typename T::action::type>::type>::value();
+      std::cout << " / "
+                << tuple_types_to_string<
+                       flatten_tuple_t<clean_action_name_t<typename T::action::type>>>::value();
     } else {
       std::cout << " / " << boost::sml::aux::get_type_name<typename T::action::type>();
     }
@@ -230,6 +191,12 @@ void dump(const SM&) noexcept {
   dump_transitions(substates_handled, starts, typename SM::transitions{});
   std::cout << std::endl << "@enduml" << std::endl;
 }
+
+class C1 {};
+class C2 {};
+class C3 {};
+class C4 {};
+class C5 {};
 
 int main() {
   sml::sm<plant_uml> sm;
