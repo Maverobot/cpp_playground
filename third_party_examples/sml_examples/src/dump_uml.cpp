@@ -34,6 +34,9 @@ std::string name() {
   return demangle(typeid(std::decay_t<T>).name());
 }
 
+/**
+ * Returns a string containing the list of demangled names of the given tuple element types.
+ */
 template <class T>
 struct tuple_types_to_string {
   static std::string value() {
@@ -52,6 +55,10 @@ struct tuple_types_to_string<std::tuple<Ts...>> {
   }
 };
 
+/**
+ * Flattens a given nested tuple type. For example, it flattens `std::tuple<std::tuple<A, B>, C>` to
+ * `std::tuple<A, B, C>`.
+ */
 template <typename T>
 struct flatten_tuple {
   using type = T;
@@ -64,29 +71,26 @@ struct flatten_tuple<std::tuple<std::tuple<TupleHead, TupleTail...>, Ts...>> {
 template <typename T>
 using flatten_tuple_t = typename flatten_tuple<T>::type;
 
+/**
+ * Checks if a given type is a sub state.
+ */
 template <typename>
 struct is_sub_state_machine : std::false_type {};
-
 template <class T, class... Ts>
 struct is_sub_state_machine<boost::sml::back::sm<boost::sml::back::sm_policy<T, Ts...>>>
     : std::true_type {};
 
+/**
+ * Checks if a type should be cleaned.
+ */
 template <typename T>
 struct cleanable : std::false_type {};
-
 template <class T, class... Ts>
 struct cleanable<boost::sml::back::sm<boost::sml::back::sm_policy<T, Ts...>>> : std::true_type {};
 
-template <class... Ts>
-struct cleanable<boost::sml::front::seq_<boost::ext::sml::aux::zero_wrapper<Ts, void>...>>
-    : std::true_type {};
-
-// clang-format off
-// sub --> s2 : e2 [guard] / seq<zero_wrapper<seq<zero_wrapper<action, void>, zero_wrapper<another_action, void> >, void>, zero_wrapper<special_action, void> >
-// sub1 --> s2 : e2 [guard] / seq<zero_wrapper<action, void>, zero_wrapper<another_action, void> >
-// sub2 --> s2 : e2 [guard] / action
-// clang-format on
-
+/**
+ * Removes the type boilerplates of a given boost::sml action type.
+ */
 template <typename T>
 struct clean_action_name {
   using type = T;
@@ -99,17 +103,22 @@ struct clean_action_name<boost::sml::front::seq_<boost::ext::sml::aux::zero_wrap
 template <typename T>
 using clean_action_name_t = typename clean_action_name<T>::type;
 
+/**
+ * Removes the type boilerplates of a given boost::sml state type.
+ */
 template <typename T>
 struct clean_state_name {
   using type = T;
 };
-
 template <class T, class... Ts>
 struct clean_state_name<boost::sml::back::sm<boost::sml::back::sm_policy<T, Ts...>>> {
   using type = T;
 };
 
 using strset_t = std::set<std::string>;
+
+template <template <class...> class T, class... Ts>
+void dump_transitions(strset_t& substates_handled, int& starts, const T<Ts...>&) noexcept;
 
 template <class T>
 void dump_transition(strset_t& substates_handled, int& starts) noexcept {
@@ -164,13 +173,9 @@ void dump_transition(strset_t& substates_handled, int& starts) noexcept {
   }
 
   if (has_action) {
-    if constexpr (cleanable<typename T::action::type>::value) {
-      std::cout << " / "
-                << tuple_types_to_string<
-                       flatten_tuple_t<clean_action_name_t<typename T::action::type>>>::value();
-    } else {
-      std::cout << " / " << boost::sml::aux::get_type_name<typename T::action::type>();
-    }
+    std::cout << " / "
+              << tuple_types_to_string<
+                     flatten_tuple_t<clean_action_name_t<typename T::action::type>>>::value();
   }
 
   std::cout << std::endl;
