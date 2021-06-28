@@ -37,7 +37,8 @@ struct subsub {
     using namespace sml;
     // clang-format off
     return make_transition_table(
-        *"subsub_idle"_s + event<e3> /action = "s1"_s,
+        *"subsub_idle"_s + on_entry<_> / action,
+        "subsub_idle"_s + event<e3> /action = "s1"_s,
         "s1"_s + event<e4> / action = X
     );
     // clang-format on
@@ -61,9 +62,11 @@ struct plant_uml {
     using namespace sml;
     return make_transition_table(
         // clang-format off
-        *"idle"_s + event<e1> = state<sub>,
+        *"idle"_s + on_entry<_> / action,
+        "idle"_s + sml::on_exit<_> / another_action,
+        "idle"_s + event<e1> = state<sub>,
         "idle"_s + event<e5> = state<sub>,
-        state<sub> + event<e2> [ guard ] / (action, another_action, special_action)= "s2"_s,
+        state<sub> + event<e2> [ guard /*|| guard && guard*/ ] / (action, another_action, special_action)= "s2"_s,
         "sub1"_s + event<e2> [ guard ] / (action, another_action)= "s2"_s,
         "sub2"_s + event<e2> [ guard ] / action = "s2"_s,
         "s2"_s + event<e3> [ guard ] = "idle"_s,

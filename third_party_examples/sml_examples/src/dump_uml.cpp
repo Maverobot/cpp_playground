@@ -154,18 +154,36 @@ void dump_transition(strset_t& substates_handled, int& starts) noexcept {
     }
   }
 
-  std::cout << src_state << " --> " << dst_state;
-
   const auto has_event = !sml::aux::is_same<typename T::event, sml::anonymous>::value;
   const auto has_guard = !sml::aux::is_same<typename T::guard, sml::front::always>::value;
   const auto has_action = !sml::aux::is_same<typename T::action, sml::front::none>::value;
+
+  const auto is_entry =
+      sml::aux::is_same<typename T::event, sml::back::on_entry<sml::_, sml::_>>::value;
+  const auto is_exit =
+      sml::aux::is_same<typename T::event, sml::back::on_exit<sml::_, sml::_>>::value;
+
+  const auto has_destination =
+      !sml::aux::is_same<typename T::dst_state, sml::front::internal>::value;
+
+  std::cout << src_state;
+
+  if (has_destination) {
+    std::cout << " --> " << dst_state;
+  }
 
   if (has_event || has_guard || has_action) {
     std::cout << " :";
   }
 
   if (has_event) {
-    std::cout << " " << boost::sml::aux::get_type_name<typename T::event>();
+    auto event = std::string(boost::sml::aux::get_type_name<typename T::event>());
+    if (is_entry) {
+      event = "on_entry";
+    } else if (is_exit) {
+      event = "on_exit";
+    }
+    std::cout << " " << event;
   }
 
   if (has_guard) {
