@@ -5,7 +5,7 @@
 #include <iostream>
 
 namespace sml = boost::sml;
-
+namespace some::extra::ns {
 struct e1 {};
 struct e2 {};
 struct e3 {};
@@ -90,3 +90,4 @@ struct plant_uml {
     );
   }
 };
+}  // namespace some::extra::ns

@@ -34,6 +34,15 @@ std::string name() {
   return demangle(typeid(std::decay_t<T>).name());
 }
 
+template <class T>
+std::string base_name() {
+  const std::string& full_name = name<T>();
+  if (full_name.back() != '>') {
+    return full_name.substr(full_name.find_last_of(':') + 1);
+  }
+  return full_name;
+}
+
 struct Or {};
 struct And {};
 struct Not {};
@@ -57,7 +66,7 @@ std::string name<Not>() {
 template <class T>
 struct tuple_types_to_string {
   static std::string value(const char* delimiter = "") {
-    static const std::string name_list = name<T>();
+    static const std::string name_list = base_name<T>();
     return name_list;
   }
 };
@@ -66,7 +75,7 @@ struct tuple_types_to_string<std::tuple<Ts...>> {
   static std::string value(const char* delimiter = ", ") {
     const char* sep = "";
     std::ostringstream oss;
-    ((((oss << sep << name<Ts>())), sep = delimiter), ...);
+    ((((oss << sep << base_name<Ts>())), sep = delimiter), ...);
     static const std::string name_list = oss.str();
     return name_list;
   }
@@ -195,11 +204,11 @@ void dump_transition(strset_t& substates_handled, int& starts) noexcept {
   // Clean the artifacts in the substate type names
   if constexpr (is_sub_state_machine<typename T::src_state>::value &&
                 cleanable<typename T::src_state>::value) {
-    src_state = name<typename clean_state_name<typename T::src_state>::type>();
+    src_state = base_name<typename clean_state_name<typename T::src_state>::type>();
   }
   if constexpr (is_sub_state_machine<typename T::dst_state>::value &&
                 cleanable<typename T::dst_state>::value) {
-    dst_state = name<typename clean_state_name<typename T::dst_state>::type>();
+    dst_state = base_name<typename clean_state_name<typename T::dst_state>::type>();
   }
 
   if (T::initial) {
@@ -240,7 +249,7 @@ void dump_transition(strset_t& substates_handled, int& starts) noexcept {
   }
 
   if (has_event) {
-    auto event = std::string(boost::sml::aux::get_type_name<typename T::event>());
+    auto event = base_name<typename T::event>();
     if (is_entry) {
       event = "on_entry";
     } else if (is_exit) {
@@ -288,6 +297,6 @@ class C4 {};
 class C5 {};
 
 int main() {
-  sml::sm<plant_uml> sm;
+  sml::sm<some::extra::ns::plant_uml> sm;
   dump(sm);
 }
