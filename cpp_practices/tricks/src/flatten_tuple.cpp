@@ -20,13 +20,22 @@ std::string name() {
 }
 
 template <typename T>
+struct flatten_tuple_helper {
+  using type = std::tuple<T>;
+};
+template <typename T>
+using flatten_tuple_helper_t = typename flatten_tuple_helper<T>::type;
+template <typename... Ts>
+struct flatten_tuple_helper<std::tuple<Ts...>> {
+  using type = decltype(std::tuple_cat(std::declval<flatten_tuple_helper_t<Ts>>()...));
+};
+template <typename T>
 struct flatten_tuple {
   using type = T;
 };
-template <typename TupleHead, typename... TupleTail, typename... Ts>
-struct flatten_tuple<std::tuple<std::tuple<TupleHead, TupleTail...>, Ts...>> {
-  using type = typename flatten_tuple<
-      std::tuple<typename flatten_tuple<TupleHead>::type, TupleTail..., Ts...>>::type;
+template <typename... Ts>
+struct flatten_tuple<std::tuple<Ts...>> {
+  using type = flatten_tuple_helper_t<std::tuple<Ts...>>;
 };
 template <typename T>
 using flatten_tuple_t = typename flatten_tuple<T>::type;
@@ -39,6 +48,9 @@ struct C5 {};
 struct C6 {};
 
 int main(int argc, char* argv[]) {
+  static_assert(
+      std::is_same_v<flatten_tuple_t<std::tuple<C6, C5, std::tuple<C4, std::tuple<C3>, C2>, C1>>,
+                     std::tuple<C6, C5, C4, C3, C2, C1>>);
   static_assert(std::is_same_v<flatten_tuple_t<std::tuple<std::tuple<std::tuple<C3>, C2>, C1>>,
                                std::tuple<C3, C2, C1>>);
   static_assert(
