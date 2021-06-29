@@ -34,22 +34,39 @@ std::string name() {
   return demangle(typeid(std::decay_t<T>).name());
 }
 
+struct Or {};
+struct And {};
+struct Not {};
+template <>
+std::string name<Or>() {
+  return " || ";
+}
+template <>
+std::string name<And>() {
+  return " && ";
+}
+
+template <>
+std::string name<Not>() {
+  return "!";
+}
+
 /**
  * Returns a string containing the list of demangled names of the given tuple element types.
  */
 template <class T>
 struct tuple_types_to_string {
-  static std::string value() {
+  static std::string value(const char* delimiter = "") {
     static const std::string name_list = name<T>();
     return name_list;
   }
 };
 template <class... Ts>
 struct tuple_types_to_string<std::tuple<Ts...>> {
-  static std::string value() {
+  static std::string value(const char* delimiter = ", ") {
     const char* sep = "";
     std::ostringstream oss;
-    (((oss << sep << demangle(typeid(std::decay_t<Ts>).name())), sep = ", "), ...);
+    ((((oss << sep << name<Ts>())), sep = delimiter), ...);
     static const std::string name_list = oss.str();
     return name_list;
   }
@@ -60,13 +77,23 @@ struct tuple_types_to_string<std::tuple<Ts...>> {
  * `std::tuple<A, B, C>`.
  */
 template <typename T>
+struct flatten_tuple_helper {
+  using type = std::tuple<T>;
+};
+template <typename T>
+using flatten_tuple_helper_t = typename flatten_tuple_helper<T>::type;
+template <typename... Ts>
+struct flatten_tuple_helper<std::tuple<Ts...>> {
+  using type = decltype(std::tuple_cat(std::declval<flatten_tuple_helper_t<Ts>>()...));
+};
+
+template <typename T>
 struct flatten_tuple {
   using type = T;
 };
-template <typename TupleHead, typename... TupleTail, typename... Ts>
-struct flatten_tuple<std::tuple<std::tuple<TupleHead, TupleTail...>, Ts...>> {
-  using type = typename flatten_tuple<
-      std::tuple<typename flatten_tuple<TupleHead>::type, TupleTail..., Ts...>>::type;
+template <typename... Ts>
+struct flatten_tuple<std::tuple<Ts...>> {
+  using type = flatten_tuple_helper_t<std::tuple<Ts...>>;
 };
 template <typename T>
 using flatten_tuple_t = typename flatten_tuple<T>::type;
@@ -87,6 +114,42 @@ template <typename T>
 struct cleanable : std::false_type {};
 template <class T, class... Ts>
 struct cleanable<boost::sml::back::sm<boost::sml::back::sm_policy<T, Ts...>>> : std::true_type {};
+
+// boost::ext::sml::v1_1_3::front::or_<
+//     boost::ext::sml::v1_1_3::aux::zero_wrapper<guard1, void>,
+//     boost::ext::sml::v1_1_3::aux::zero_wrapper<
+//         boost::ext::sml::v1_1_3::front::and_<
+//             boost::ext::sml::v1_1_3::aux::zero_wrapper<guard2, void>,
+//             boost::ext::sml::v1_1_3::aux::zero_wrapper<guard3, void>>,
+//         void>>
+//     lol;
+
+/**
+ * Removes the type boilerplates of a given boost::sml guard type.
+ */
+template <typename T>
+struct clean_guard_name {
+  using type = T;
+};
+
+template <typename T>
+using clean_guard_name_t = typename clean_guard_name<T>::type;
+
+template <class TFirst, class TSecond>
+struct clean_guard_name<boost::sml::front::or_<boost::ext::sml::aux::zero_wrapper<TFirst, void>,
+                                               boost::ext::sml::aux::zero_wrapper<TSecond, void>>> {
+  using type = std::tuple<clean_guard_name_t<TFirst>, Or, clean_guard_name_t<TSecond>>;
+};
+template <class TFirst, class TSecond>
+struct clean_guard_name<
+    boost::sml::front::and_<boost::ext::sml::aux::zero_wrapper<TFirst, void>,
+                            boost::ext::sml::aux::zero_wrapper<TSecond, void>>> {
+  using type = std::tuple<typename clean_guard_name<TFirst>::type, And, TSecond>;
+};
+template <typename T>
+struct clean_guard_name<boost::sml::front::not_<boost::ext::sml::aux::zero_wrapper<T, void>>> {
+  using type = std::tuple<Not, T>;
+};
 
 /**
  * Removes the type boilerplates of a given boost::sml action type.
@@ -187,7 +250,10 @@ void dump_transition(strset_t& substates_handled, int& starts) noexcept {
   }
 
   if (has_guard) {
-    std::cout << " [" << boost::sml::aux::get_type_name<typename T::guard::type>() << "]";
+    std::cout << " ["
+              << tuple_types_to_string<
+                     flatten_tuple_t<clean_guard_name_t<typename T::guard::type>>>::value("")
+              << "]";
   }
 
   if (has_action) {

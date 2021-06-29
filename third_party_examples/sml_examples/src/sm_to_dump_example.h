@@ -16,6 +16,18 @@ struct guard {
   bool operator()() const { return true; }
 } guard;
 
+struct guard1 {
+  bool operator()() const { return true; }
+} guard1;
+
+struct guard2 {
+  bool operator()() const { return true; }
+} guard2;
+
+struct guard3 {
+  bool operator()() const { return true; }
+} guard3;
+
 inline static auto hook_action() {
   return []() { std::cout << "hook_action"; };
 }
@@ -66,7 +78,7 @@ struct plant_uml {
         "idle"_s + sml::on_exit<_> / another_action,
         "idle"_s + event<e1> = state<sub>,
         "idle"_s + event<e5> = state<sub>,
-        state<sub> + event<e2> [ guard /*|| guard && guard*/ ] / (action, another_action, special_action)= "s2"_s,
+        state<sub> + event<e2> [ !guard1 || guard2 && guard3] / (action, another_action, special_action)= "s2"_s,
         "sub1"_s + event<e2> [ guard ] / (action, another_action)= "s2"_s,
         "sub2"_s + event<e2> [ guard ] / action = "s2"_s,
         "s2"_s + event<e3> [ guard ] = "idle"_s,
