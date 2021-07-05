@@ -43,23 +43,6 @@ std::string base_name() {
   return full_name;
 }
 
-struct Or {};
-struct And {};
-struct Not {};
-template <>
-std::string name<Or>() {
-  return " || ";
-}
-template <>
-std::string name<And>() {
-  return " && ";
-}
-
-template <>
-std::string name<Not>() {
-  return "!";
-}
-
 /**
  * Returns a string containing the list of demangled names of the given tuple element types.
  */
@@ -124,40 +107,41 @@ struct cleanable : std::false_type {};
 template <class T, class... Ts>
 struct cleanable<boost::sml::back::sm<boost::sml::back::sm_policy<T, Ts...>>> : std::true_type {};
 
-// boost::ext::sml::v1_1_3::front::or_<
-//     boost::ext::sml::v1_1_3::aux::zero_wrapper<guard1, void>,
-//     boost::ext::sml::v1_1_3::aux::zero_wrapper<
-//         boost::ext::sml::v1_1_3::front::and_<
-//             boost::ext::sml::v1_1_3::aux::zero_wrapper<guard2, void>,
-//             boost::ext::sml::v1_1_3::aux::zero_wrapper<guard3, void>>,
-//         void>>
-//     lol;
-
 /**
- * Removes the type boilerplates of a given boost::sml guard type.
+ * Get the string representation of a given boost::sml guard type.
  */
 template <typename T>
-struct clean_guard_name {
-  using type = T;
+struct guard_name {
+  static std::string name() { return base_name<T>(); }
+  constexpr static bool is_leaf = true;
 };
 
-template <typename T>
-using clean_guard_name_t = typename clean_guard_name<T>::type;
-
 template <class TFirst, class TSecond>
-struct clean_guard_name<boost::sml::front::or_<boost::ext::sml::aux::zero_wrapper<TFirst, void>,
-                                               boost::ext::sml::aux::zero_wrapper<TSecond, void>>> {
-  using type = std::tuple<clean_guard_name_t<TFirst>, Or, clean_guard_name_t<TSecond>>;
+struct guard_name<boost::sml::front::or_<boost::ext::sml::aux::zero_wrapper<TFirst, void>,
+                                         boost::ext::sml::aux::zero_wrapper<TSecond, void>>> {
+  static std::string name() {
+    return std::string("(") + guard_name<TFirst>::name() + " || " + guard_name<TSecond>::name() +
+           ")";
+  }
+  constexpr static bool is_leaf = false;
 };
 template <class TFirst, class TSecond>
-struct clean_guard_name<
-    boost::sml::front::and_<boost::ext::sml::aux::zero_wrapper<TFirst, void>,
-                            boost::ext::sml::aux::zero_wrapper<TSecond, void>>> {
-  using type = std::tuple<typename clean_guard_name<TFirst>::type, And, TSecond>;
+struct guard_name<boost::sml::front::and_<boost::ext::sml::aux::zero_wrapper<TFirst, void>,
+                                          boost::ext::sml::aux::zero_wrapper<TSecond, void>>> {
+  static std::string name() {
+    return guard_name<TFirst>::name() + " && " + guard_name<TSecond>::name();
+  }
+  constexpr static bool is_leaf = false;
 };
 template <typename T>
-struct clean_guard_name<boost::sml::front::not_<boost::ext::sml::aux::zero_wrapper<T, void>>> {
-  using type = std::tuple<Not, T>;
+struct guard_name<boost::sml::front::not_<boost::ext::sml::aux::zero_wrapper<T, void>>> {
+  static std::string name() {
+    if constexpr (guard_name<T>::is_leaf) {
+      return "!" + guard_name<T>::name();
+    } else {
+      return "!(" + guard_name<T>::name() + ")";
+    }
+  }
 };
 
 /**
@@ -259,10 +243,7 @@ void dump_transition(strset_t& substates_handled, int& starts) noexcept {
   }
 
   if (has_guard) {
-    std::cout << " ["
-              << tuple_types_to_string<
-                     flatten_tuple_t<clean_guard_name_t<typename T::guard::type>>>::value("")
-              << "]";
+    std::cout << " [" << guard_name<typename T::guard::type>::name() << "]";
   }
 
   if (has_action) {

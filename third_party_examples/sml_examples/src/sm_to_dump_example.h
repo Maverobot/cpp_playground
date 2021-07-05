@@ -79,7 +79,7 @@ struct plant_uml {
         "idle"_s + event<e1> = state<sub>,
         "idle"_s + event<e5> = state<sub>,
         state<sub> + event<e2> [ !guard1 || guard2 && guard3] / (action, another_action, special_action)= "s2"_s,
-        "sub1"_s + event<e2> [ guard ] / (action, another_action)= "s2"_s,
+        "sub1"_s + event<e2> [ !(guard1 || guard2 && guard3) ] / (action, another_action)= "s2"_s,
         "sub2"_s + event<e2> [ guard ] / action = "s2"_s,
         "s2"_s + event<e3> [ guard ] = "idle"_s,
         "s2"_s + event<e4> / []{std::cout << "received e4 in s2";} = X,
