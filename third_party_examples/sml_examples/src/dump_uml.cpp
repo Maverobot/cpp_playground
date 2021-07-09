@@ -171,105 +171,117 @@ struct clean_state_name<boost::sml::back::sm<boost::sml::back::sm_policy<T, Ts..
   using type = T;
 };
 
-using strset_t = std::set<std::string>;
+class UMLDumper {
+ public:
+  UMLDumper(size_t max_depth = 0) : max_depth_(max_depth) {}
 
-template <template <class...> class T, class... Ts>
-void dump_transitions(strset_t& substates_handled, int& starts, const T<Ts...>&) noexcept;
+  template <class SM>
+  void dump(const SM&) noexcept {
+    std::set<std::string> substates_handled;  // guarantee only one dump per sub-machine
+    int starts{0};                            // '--' is required between ortho states
 
-template <class T>
-void dump_transition(strset_t& substates_handled, int& starts) noexcept {
-  auto src_state = std::string{sml::aux::string<typename T::src_state>{}.c_str()};
-  auto dst_state = std::string{sml::aux::string<typename T::dst_state>{}.c_str()};
-
-  if (dst_state == "terminate") {
-    dst_state = "[*]";
+    std::cout << "@startuml" << std::endl << std::endl;
+    dump_transitions(substates_handled, starts, 0, typename SM::transitions{});
+    std::cout << std::endl << "@enduml" << std::endl;
   }
 
-  // Clean the artifacts in the substate type names
-  if constexpr (is_sub_state_machine<typename T::src_state>::value &&
-                cleanable<typename T::src_state>::value) {
-    src_state = base_name<typename clean_state_name<typename T::src_state>::type>();
-  }
-  if constexpr (is_sub_state_machine<typename T::dst_state>::value &&
-                cleanable<typename T::dst_state>::value) {
-    dst_state = base_name<typename clean_state_name<typename T::dst_state>::type>();
-  }
+ private:
+  size_t max_depth_;
 
-  if (T::initial) {
-    std::cout << (starts++ ? "--\n" : "") << "[*] --> " << src_state << std::endl;
-  }
+  using strset_t = std::set<std::string>;
 
-  if constexpr (is_sub_state_machine<typename T::dst_state>::value) {
-    auto [loc, suc] = substates_handled.insert(dst_state);
+  template <class T>
+  void dump_transition(strset_t& substates_handled, int& starts, size_t depth) noexcept {
+    auto src_state = std::string{sml::aux::string<typename T::src_state>{}.c_str()};
+    auto dst_state = std::string{sml::aux::string<typename T::dst_state>{}.c_str()};
 
-    if (suc) {
-      std::cout << "\nstate " << dst_state << " {\n";
-      int new_starts{0};
-      dump_transitions(substates_handled, new_starts, typename T::dst_state::transitions{});
-      std::cout << "}\n";
+    if (dst_state == "terminate") {
+      dst_state = "[*]";
     }
-  }
 
-  const auto has_event = !sml::aux::is_same<typename T::event, sml::anonymous>::value;
-  const auto has_guard = !sml::aux::is_same<typename T::guard, sml::front::always>::value;
-  const auto has_action = !sml::aux::is_same<typename T::action, sml::front::none>::value;
-
-  const auto is_entry =
-      sml::aux::is_same<typename T::event, sml::back::on_entry<sml::_, sml::_>>::value;
-  const auto is_exit =
-      sml::aux::is_same<typename T::event, sml::back::on_exit<sml::_, sml::_>>::value;
-
-  const auto has_destination =
-      !sml::aux::is_same<typename T::dst_state, sml::front::internal>::value;
-
-  std::cout << src_state;
-
-  if (has_destination) {
-    std::cout << " --> " << dst_state;
-  }
-
-  if (has_event || has_guard || has_action) {
-    std::cout << " :";
-  }
-
-  if (has_event) {
-    auto event = base_name<typename T::event>();
-    if (is_entry) {
-      event = "on_entry";
-    } else if (is_exit) {
-      event = "on_exit";
+    // Clean the artifacts in the substate type names
+    if constexpr (is_sub_state_machine<typename T::src_state>::value &&
+                  cleanable<typename T::src_state>::value) {
+      src_state = base_name<typename clean_state_name<typename T::src_state>::type>();
     }
-    std::cout << " " << event;
+    if constexpr (is_sub_state_machine<typename T::dst_state>::value &&
+                  cleanable<typename T::dst_state>::value) {
+      dst_state = base_name<typename clean_state_name<typename T::dst_state>::type>();
+    }
+
+    if (T::initial) {
+      std::cout << (starts++ ? "--\n" : "") << "[*] --> " << src_state << std::endl;
+    }
+
+    if constexpr (is_sub_state_machine<typename T::dst_state>::value) {
+      auto [loc, suc] = substates_handled.insert(dst_state);
+
+      if (suc) {
+        std::cout << "\nstate " << dst_state << " {\n";
+        int new_starts{0};
+        dump_transitions(substates_handled, new_starts, depth + 1,
+                         typename T::dst_state::transitions{});
+        std::cout << "}\n";
+      }
+    }
+
+    const auto has_event = !sml::aux::is_same<typename T::event, sml::anonymous>::value;
+    const auto has_guard = !sml::aux::is_same<typename T::guard, sml::front::always>::value;
+    const auto has_action = !sml::aux::is_same<typename T::action, sml::front::none>::value;
+
+    const auto is_entry =
+        sml::aux::is_same<typename T::event, sml::back::on_entry<sml::_, sml::_>>::value;
+    const auto is_exit =
+        sml::aux::is_same<typename T::event, sml::back::on_exit<sml::_, sml::_>>::value;
+
+    const auto has_destination =
+        !sml::aux::is_same<typename T::dst_state, sml::front::internal>::value;
+
+    std::cout << src_state;
+
+    if (has_destination) {
+      std::cout << " --> " << dst_state;
+    }
+
+    if (has_event || has_guard || has_action) {
+      std::cout << " :";
+    }
+
+    if (has_event) {
+      auto event = base_name<typename T::event>();
+      if (is_entry) {
+        event = "on_entry";
+      } else if (is_exit) {
+        event = "on_exit";
+      }
+      std::cout << " " << event;
+    }
+
+    if (has_guard) {
+      std::cout << " [" << guard_name<typename T::guard::type>::name() << "]";
+    }
+
+    if (has_action) {
+      std::cout << " / "
+                << tuple_types_to_string<
+                       flatten_tuple_t<clean_action_name_t<typename T::action::type>>>::value();
+    }
+
+    std::cout << std::endl;
   }
 
-  if (has_guard) {
-    std::cout << " [" << guard_name<typename T::guard::type>::name() << "]";
+  template <template <class...> class T, class... Ts>
+  void dump_transitions(strset_t& substates_handled,
+                        int& starts,
+                        size_t depth,
+                        const T<Ts...>&) noexcept {
+    if (depth > max_depth_) {
+      return;
+    }
+    int _[]{0, (dump_transition<Ts>(substates_handled, starts, depth), 0)...};
+    (void)_;
   }
-
-  if (has_action) {
-    std::cout << " / "
-              << tuple_types_to_string<
-                     flatten_tuple_t<clean_action_name_t<typename T::action::type>>>::value();
-  }
-
-  std::cout << std::endl;
-}
-
-template <template <class...> class T, class... Ts>
-void dump_transitions(strset_t& substates_handled, int& starts, const T<Ts...>&) noexcept {
-  int _[]{0, (dump_transition<Ts>(substates_handled, starts), 0)...};
-  (void)_;
-}
-
-template <class SM>
-void dump(const SM&) noexcept {
-  std::set<std::string> substates_handled;  // guarantee only one dump per sub-machine
-  int starts{0};                            // '--' is required between ortho states
-
-  std::cout << "@startuml" << std::endl << std::endl;
-  dump_transitions(substates_handled, starts, typename SM::transitions{});
-  std::cout << std::endl << "@enduml" << std::endl;
-}
+};
 
 class C1 {};
 class C2 {};
@@ -279,5 +291,7 @@ class C5 {};
 
 int main() {
   sml::sm<some::extra::ns::plant_uml> sm;
-  dump(sm);
+
+  UMLDumper dumper(1);
+  dumper.dump(sm);
 }
