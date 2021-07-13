@@ -31,14 +31,13 @@ int main() {
   // Structs
   Data v1{100., 11., 21., 3};
   Data v2{200., 12., 22., 5};
-  using namespace boost::pfr::ops;
-  std::cout << "v1: " << v1 << std::endl;
-  std::cout << "v2: " << v2 << std::endl;
+  std::cout << "v1: " << boost::pfr::io_fields(v1) << std::endl;
+  std::cout << "v2: " << boost::pfr::io_fields(v2) << std::endl;
   std::cout << "=====================\n";
 
   // Transform each field of one struct with a lambda function
   auto v1_double = struct_magic::transform([](const auto& v) { return v * 2; }, v1);
-  std::cout << "v1 * 2: " << v1_double << std::endl;
+  std::cout << "v1 * 2: " << boost::pfr::io_fields(v1_double) << std::endl;
 
   std::cout << "=====================\n";
   // Use corresponding fields from two structs to create a new struct with a lambda function
@@ -48,18 +47,18 @@ int main() {
         return a + b;
       },
       v1, v2);
-  std::cout << "v3 = v1 + v2: " << v3 << std::endl;
+  std::cout << "v3 = v1 + v2: " << boost::pfr::io_fields(v3) << std::endl;
   std::cout << "=====================\n";
 
   // Transform the struct with a lambda function
-  std::cout << "v1 before: " << v1 << std::endl;
+  std::cout << "v1 before: " << boost::pfr::io_fields(v1) << std::endl;
   struct_magic::apply(
       [i = 0](auto& item) mutable {
         item = i;
         i++;
       },
       v1);
-  std::cout << "v1 after: " << v1 << std::endl;
+  std::cout << "v1 after: " << boost::pfr::io_fields(v1) << std::endl;
   std::cout << "=====================\n";
 
   // std::cout << res << std::endl;
