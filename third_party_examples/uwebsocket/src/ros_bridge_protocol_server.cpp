@@ -1,20 +1,7 @@
 /* We simply call the root header file "App.h", giving you uWS::App and uWS::SSLApp */
 #include "App.h"
 #include "json.hpp"
-
-std::string trim(std::string_view s) {
-  auto start = s.begin();
-  while (start != s.end() && std::isspace(*start)) {
-    start++;
-  }
-
-  auto end = s.end();
-  do {
-    end--;
-  } while (std::distance(start, end) > 0 && std::isspace(*end));
-
-  return std::string(start, end + 1);
-}
+#include "trim.h"
 
 /* This is a simple WebSocket echo server example.
  * You may compile it with "WITH_OPENSSL=1 make" or with "make" */
