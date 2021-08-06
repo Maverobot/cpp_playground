@@ -50,9 +50,6 @@ target_link_libraries(broadcast PRIVATE uwebsocket)
 add_executable(broadcast_echo_server src/broadcast_echo_server.cpp)
 target_link_libraries(broadcast_echo_server PRIVATE uwebsocket)
 
-add_executable(ros_bridge_protocol_server src/ros_bridge_protocol_server.cpp)
-target_link_libraries(ros_bridge_protocol_server PRIVATE uwebsocket)
-
 add_executable(threaded_broadcast src/threaded_broadcast.cpp)
 target_link_libraries(threaded_broadcast PRIVATE uwebsocket pthread)
 
