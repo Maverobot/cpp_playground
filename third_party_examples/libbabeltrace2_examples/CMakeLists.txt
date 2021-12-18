@@ -16,3 +16,6 @@ endif ()
 
 add_executable(read_trace_file read_trace_file.cpp)
 target_link_libraries(read_trace_file PRIVATE babeltrace2::babeltrace2)
+
+add_executable(read_lttng_live read_lttng_live.cpp)
+target_link_libraries(read_lttng_live PRIVATE babeltrace2::babeltrace2)
