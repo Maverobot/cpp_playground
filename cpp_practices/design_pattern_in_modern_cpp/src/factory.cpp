@@ -22,37 +22,33 @@
 // Behavior on unknown type is returning nullptr
 template <typename IdentifierType, typename AbstractProduct>
 class FactoryErrorNullptr {
-protected:
-  static AbstractProduct *onUnknownType(const IdentifierType &id) {
-    return nullptr;
-  }
+ protected:
+  static AbstractProduct* onUnknownType(const IdentifierType& id) { return nullptr; }
 };
 
 // Behavior on unknown type is returning nullptr
 template <typename IdentifierType, typename AbstractProduct>
 class FactoryErrorException {
-protected:
-  static AbstractProduct *onUnknownType(const IdentifierType &id) {
+ protected:
+  static AbstractProduct* onUnknownType(const IdentifierType& id) {
     throw std::invalid_argument("Unknown object type passed to Factory");
   }
 };
 
 // Default behavior on unknown type is returning nullptr
 
-template <typename AbstractProduct, typename IdentifierType,
-          typename ProductCreator = std::function<AbstractProduct *()>,
-          template <typename, typename> class FactoryErrorPolicy =
-              FactoryErrorNullptr>
+template <typename AbstractProduct,
+          typename IdentifierType,
+          typename ProductCreator = std::function<AbstractProduct*()>,
+          template <typename, typename> class FactoryErrorPolicy = FactoryErrorNullptr>
 class Factory : private FactoryErrorPolicy<IdentifierType, AbstractProduct> {
-public:
+ public:
   Factory() = default;
-  bool registerCreator(const IdentifierType &id, ProductCreator creator) {
+  bool registerCreator(const IdentifierType& id, ProductCreator creator) {
     return associations_.insert({id, creator}).second;
   };
-  bool unregisterCreator(const IdentifierType &id) {
-    return associations_.erase(id) == 1;
-  }
-  AbstractProduct *createObject(const IdentifierType &id) {
+  bool unregisterCreator(const IdentifierType& id) { return associations_.erase(id) == 1; }
+  AbstractProduct* createObject(const IdentifierType& id) {
     auto i = associations_.find(id);
     if (i != associations_.end()) {
       return (i->second)();
@@ -60,7 +56,7 @@ public:
     return ErrorPolicy::onUnknownType(id);
   }
 
-private:
+ private:
   using AssocMap = std::map<IdentifierType, ProductCreator>;
   using ErrorPolicy = FactoryErrorPolicy<IdentifierType, AbstractProduct>;
   AssocMap associations_;
@@ -68,9 +64,7 @@ private:
 
 // Example dummy classes
 struct Fruit {
-  virtual void info() const {
-    std::cout << "This is an abstract fruit" << std::endl;
-  }
+  virtual void info() const { std::cout << "This is an abstract fruit" << std::endl; }
 };
 
 struct Apple : Fruit {
@@ -83,12 +77,12 @@ struct Pear : Fruit {
   void info() const override { std::cout << "This is a Pear" << std::endl; }
 };
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   // Prepare factory
   Factory<Fruit, int> fruit_factory;
-  fruit_factory.registerCreator(0, []() -> Fruit * { return new Apple(); });
-  fruit_factory.registerCreator(1, []() -> Fruit * { return new Banana(); });
-  fruit_factory.registerCreator(2, []() -> Fruit * { return new Pear(); });
+  fruit_factory.registerCreator(0, []() -> Fruit* { return new Apple(); });
+  fruit_factory.registerCreator(1, []() -> Fruit* { return new Banana(); });
+  fruit_factory.registerCreator(2, []() -> Fruit* { return new Pear(); });
 
   // Create apple, banana, pear and some unknown fruit
   std::unique_ptr<Fruit> apple_ptr(fruit_factory.createObject(0));
@@ -106,8 +100,7 @@ int main(int argc, char *argv[]) {
   }
 
   // Factory with exception
-  Factory<Fruit, int, std::function<Fruit *()>, FactoryErrorException>
-      fruit_factory_exc;
+  Factory<Fruit, int, std::function<Fruit*()>, FactoryErrorException> fruit_factory_exc;
   std::unique_ptr<Fruit> unknown_fruit2_ptr(fruit_factory_exc.createObject(99));
 
   return 0;

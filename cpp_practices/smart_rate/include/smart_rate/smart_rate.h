@@ -4,11 +4,10 @@
 #include <iostream>
 #include <thread>
 
-template <typename ControlPolicy> class SmartRate {
-public:
-  SmartRate(double r)
-      : desired_interval_(1.0 / r), command_interval_(1.0 / r),
-        control_(1.0 / r) {
+template <typename ControlPolicy>
+class SmartRate {
+ public:
+  SmartRate(double r) : desired_interval_(1.0 / r), command_interval_(1.0 / r), control_(1.0 / r) {
     last_t_ = std::chrono::high_resolution_clock::now();
   }
   void sleep() {
@@ -19,9 +18,8 @@ public:
     real_interval_ = std::chrono::duration_cast<seconds>(now - last_t_);
     std::cout << "desired interval: " << desired_interval_.count()
               << ", command interval: " << command_interval_.count()
-              << ", real interval: " << real_interval_.count() << " error: "
-              << 1000 * std::abs(desired_interval_.count() -
-                                 real_interval_.count())
+              << ", real interval: " << real_interval_.count()
+              << " error: " << 1000 * std::abs(desired_interval_.count() - real_interval_.count())
               << " msecs" << std::endl;
 
     smart_adapt();
@@ -34,13 +32,13 @@ public:
   double getDesiredRate() const { return 1 / desired_interval_.count(); }
   double getCommandRate() const { return 1 / command_interval_.count(); }
 
-private:
+ private:
   using timepoint = std::chrono::system_clock::time_point;
   using seconds = std::chrono::duration<double, std::ratio<1>>;
 
   void smart_adapt() {
-    command_interval_ = seconds(control_.get_command(command_interval_.count(),
-                                                     real_interval_.count()));
+    command_interval_ =
+        seconds(control_.get_command(command_interval_.count(), real_interval_.count()));
   }
 
   seconds desired_interval_;

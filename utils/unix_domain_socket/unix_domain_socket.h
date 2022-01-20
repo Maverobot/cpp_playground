@@ -1,23 +1,23 @@
 #pragma once
 
-#include <stdexcept>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
+#include <stdexcept>
 #include <thread>
 #include <vector>
 
 namespace uds {
 
 namespace internal {
-void throw_errno(const char *s) {
+void throw_errno(const char* s) {
   throw std::runtime_error(std::string(s) + strerror(errno));
 }
-} // namespace internal
+}  // namespace internal
 
 class UnixDomainSocketClient {
-public:
-  UnixDomainSocketClient(char const *socket_path) {
+ public:
+  UnixDomainSocketClient(char const* socket_path) {
     if ((file_descriptor_ = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
       internal::throw_errno("socket error: ");
     }
@@ -34,13 +34,12 @@ public:
     }
 
     // Connects to server
-    if (connect(file_descriptor_, (struct sockaddr *)&addr, sizeof(addr)) ==
-        -1) {
+    if (connect(file_descriptor_, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
       internal::throw_errno("connect error: ");
     }
   }
 
-  void send(char const *buf) {
+  void send(char const* buf) {
     int n = std::char_traits<char>::length(buf);
     if (write(file_descriptor_, buf, n) != n) {
       if (n > 0) {
@@ -52,13 +51,13 @@ public:
     }
   }
 
-private:
+ private:
   int file_descriptor_;
 };
 
 class UnixDomainSocketServer {
-public:
-  UnixDomainSocketServer(char const *socket_path) {
+ public:
+  UnixDomainSocketServer(char const* socket_path) {
     if ((file_descriptor_ = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
       internal::throw_errno("socket error: ");
     }
@@ -76,7 +75,7 @@ public:
     }
 
     // Gives the socket FD the local address
-    if (bind(file_descriptor_, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
+    if (bind(file_descriptor_, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
       internal::throw_errno("bind error: ");
     }
 

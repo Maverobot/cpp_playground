@@ -1,8 +1,9 @@
-#include <iostream>    // for cout and endl
-#include <type_traits> // for true_type and false_type
+#include <iostream>     // for cout and endl
+#include <type_traits>  // for true_type and false_type
 
 // SFINAE out partial specialization
-template <typename...> using VoidT = void;
+template <typename...>
+using VoidT = void;
 template <typename, typename = VoidT<>>
 struct isDefaultConstructableT : std::false_type {};
 template <typename T>
@@ -25,9 +26,8 @@ struct NoConstructorClass {
 };
 struct NormalClass {};
 
-int main(int argc, char *argv[]) {
-  if constexpr (std::is_convertible<isDefaultConstructableT<NormalClass>,
-                                    std::true_type>::value) {
+int main(int argc, char* argv[]) {
+  if constexpr (std::is_convertible<isDefaultConstructableT<NormalClass>, std::true_type>::value) {
     std::cout << "NormalClass is default constructable" << std::endl;
   } else {
     std::cout << "NormalClass is not default constructable" << std::endl;

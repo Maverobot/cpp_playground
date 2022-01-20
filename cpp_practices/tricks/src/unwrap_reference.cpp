@@ -10,7 +10,7 @@
 
 // Make std::array printable with std::cout
 template <class T>
-std::ostream &operator<<(std::ostream &o, const std::vector<T> &arr) {
+std::ostream& operator<<(std::ostream& o, const std::vector<T>& arr) {
   copy(arr.cbegin(), arr.cend(), std::ostream_iterator<T>(o, " "));
   return o;
 }
@@ -47,7 +47,8 @@ std::ostream &operator<<(std::ostream &o, const std::vector<T> &arr) {
  */
 
 namespace detail {
-template <typename type_t, class orig_t> struct unwrap_impl {
+template <typename type_t, class orig_t>
+struct unwrap_impl {
   using type = orig_t;
 };
 
@@ -55,26 +56,29 @@ template <typename type_t, class V>
 struct unwrap_impl<std::reference_wrapper<type_t>, V> {
   using type = type_t;
 };
-} // namespace detail
+}  // namespace detail
 
-template <class T> struct unwrap {
+template <class T>
+struct unwrap {
   using type = typename detail::unwrap_impl<std::decay_t<T>, T>::type;
 };
 
-template <typename type_t> using unwrap_t = typename unwrap<type_t>::type;
+template <typename type_t>
+using unwrap_t = typename unwrap<type_t>::type;
 
-template <typename container_t> auto range(container_t &container) {
+template <typename container_t>
+auto range(container_t& container) {
   return std::tuple{std::begin(container), std::end(container)};
 };
-template <typename container_t> auto range(const container_t &container) {
+template <typename container_t>
+auto range(const container_t& container) {
   return std::tuple{std::begin(container), std::end(container)};
 };
 
 template <typename container_t, typename predicate_t>
-auto where(const container_t &container, predicate_t predicate) {
+auto where(const container_t& container, predicate_t predicate) {
   auto [b, e] = range(container);
-  using type =
-      unwrap_t<std::remove_reference_t<std::remove_const_t<decltype(*b)>>>;
+  using type = unwrap_t<std::remove_reference_t<std::remove_const_t<decltype(*b)>>>;
   using reference = std::reference_wrapper<type>;
 
   std::vector<reference> result{};
@@ -95,17 +99,13 @@ auto where(const container_t &container, predicate_t predicate) {
 int main() {
   std::vector v{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
 
-  std::cout << "even numbers: " << where(v, [](auto n) { return n % 2 == 0; })
-            << std::endl;
+  std::cout << "even numbers: " << where(v, [](auto n) { return n % 2 == 0; }) << std::endl;
 
-  std::cout << "odd numbers: " << where(v, [](auto n) { return n % 2 == 1; })
-            << std::endl;
+  std::cout << "odd numbers: " << where(v, [](auto n) { return n % 2 == 1; }) << std::endl;
 
-  std::cout << "x & 0b10: " << where(v, [](auto n) { return n & 0b10; })
-            << std::endl;
+  std::cout << "x & 0b10: " << where(v, [](auto n) { return n & 0b10; }) << std::endl;
 
-  std::cout << "x & 0b01: " << where(v, [](auto n) { return n & 0b01; })
-            << std::endl;
+  std::cout << "x & 0b01: " << where(v, [](auto n) { return n & 0b01; }) << std::endl;
 
   return 0;
 }

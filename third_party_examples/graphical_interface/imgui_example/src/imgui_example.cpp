@@ -1,8 +1,8 @@
 
+#include <stdio.h>
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl2.h"
-#include <stdio.h>
 #ifdef __APPLE__
 #define GL_SILENCE_DEPRECATION
 #endif
@@ -14,31 +14,29 @@
 // legacy_stdio_definitions.lib, which we do using this pragma. Your own project
 // should not be affected, as you are likely to link with a newer binary of GLFW
 // that is adequate for your version of Visual Studio.
-#if defined(_MSC_VER) && (_MSC_VER >= 1900) &&                                 \
-    !defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
+#if defined(_MSC_VER) && (_MSC_VER >= 1900) && !defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
 #pragma comment(lib, "legacy_stdio_definitions")
 #endif
 
-static void glfw_error_callback(int error, const char *description) {
+static void glfw_error_callback(int error, const char* description) {
   fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 
-int main(int, char **) {
+int main(int, char**) {
   // Setup window
   glfwSetErrorCallback(glfw_error_callback);
   if (!glfwInit())
     return 1;
-  GLFWwindow *window = glfwCreateWindow(
-      1280, 720, "Dear ImGui GLFW+OpenGL2 example", NULL, NULL);
+  GLFWwindow* window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+OpenGL2 example", NULL, NULL);
   if (window == NULL)
     return 1;
   glfwMakeContextCurrent(window);
-  glfwSwapInterval(1); // Enable vsync
+  glfwSwapInterval(1);  // Enable vsync
 
   // Setup Dear ImGui context
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
-  ImGuiIO &io = ImGui::GetIO();
+  ImGuiIO& io = ImGui::GetIO();
   (void)io;
   // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable
   // Keyboard Controls io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad; //
@@ -111,24 +109,22 @@ int main(int, char **) {
       static float f = 0.0f;
       static int counter = 0;
 
-      ImGui::Begin("Hello, world!"); // Create a window called "Hello, world!"
-                                     // and append into it.
+      ImGui::Begin("Hello, world!");  // Create a window called "Hello, world!"
+                                      // and append into it.
 
-      ImGui::Text("This is some useful text."); // Display some text (you can
-                                                // use a format strings too)
-      ImGui::Checkbox(
-          "Demo Window",
-          &show_demo_window); // Edit bools storing our window open/close state
+      ImGui::Text("This is some useful text.");  // Display some text (you can
+                                                 // use a format strings too)
+      ImGui::Checkbox("Demo Window",
+                      &show_demo_window);  // Edit bools storing our window open/close state
       ImGui::Checkbox("Another Window", &show_another_window);
 
       ImGui::SliderFloat("float", &f, 0.0f,
-                         1.0f); // Edit 1 float using a slider from 0.0f to 1.0f
-      ImGui::ColorEdit3(
-          "clear color",
-          (float *)&clear_color); // Edit 3 floats representing a color
+                         1.0f);  // Edit 1 float using a slider from 0.0f to 1.0f
+      ImGui::ColorEdit3("clear color",
+                        (float*)&clear_color);  // Edit 3 floats representing a color
 
-      if (ImGui::Button("Button")) // Buttons return true when clicked (most
-                                   // widgets return true when edited/activated)
+      if (ImGui::Button("Button"))  // Buttons return true when clicked (most
+                                    // widgets return true when edited/activated)
         counter++;
       ImGui::SameLine();
       ImGui::Text("counter = %d", counter);
@@ -140,11 +136,10 @@ int main(int, char **) {
 
     // 3. Show another simple window.
     if (show_another_window) {
-      ImGui::Begin(
-          "Another Window",
-          &show_another_window); // Pass a pointer to our bool variable (the
-                                 // window will have a closing button that will
-                                 // clear the bool when clicked)
+      ImGui::Begin("Another Window",
+                   &show_another_window);  // Pass a pointer to our bool variable (the
+                                           // window will have a closing button that will
+                                           // clear the bool when clicked)
       ImGui::Text("Hello from another window!");
       if (ImGui::Button("Close Me"))
         show_another_window = false;

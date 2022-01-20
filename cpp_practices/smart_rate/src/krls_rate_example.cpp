@@ -9,7 +9,7 @@
 #include <dlib/svm.h>
 
 class KrlsRegression {
-public:
+ public:
   KrlsRegression() : reg_(KernelType(0.1), 0.001){};
 
   void train(double x, double y) {
@@ -24,14 +24,14 @@ public:
     return reg_(m);
   }
 
-private:
+ private:
   using SampleType = dlib::matrix<double, 1, 1>;
   using KernelType = dlib::radial_basis_kernel<SampleType>;
 
   dlib::krls<KernelType> reg_;
 };
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   auto rate = SmartRate<NoControl>(1000);
   using namespace std::chrono_literals;
   using std::chrono::high_resolution_clock;
@@ -41,7 +41,6 @@ int main(int argc, char *argv[]) {
   dlib::rand rng;
   KrlsRegression reg;
   while (true) {
-
     // do something...
     std::this_thread::sleep_for(100us);
 

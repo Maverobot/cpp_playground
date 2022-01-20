@@ -7,7 +7,7 @@
    function at regular intervals from another thread.
 */
 
-#include <dlib/misc_api.h> // for dlib::sleep
+#include <dlib/misc_api.h>  // for dlib::sleep
 #include <dlib/timer.h>
 #include <iostream>
 
@@ -17,7 +17,7 @@ using namespace std;
 // ----------------------------------------------------------------------------------------
 
 class timer_example {
-public:
+ public:
   void action_function() {
     // print out a message so we can see that this function is being triggered
     cout << "action_function() called" << endl;

@@ -1,17 +1,16 @@
-#include <iterator>
 #include <matplotlibcpp.h>
+#include <iterator>
 #include <thread>
 
 namespace plt = matplotlibcpp;
 
 template <typename T>
-std::ostream &operator<<(std::ostream &o, const std::vector<T> &v) {
+std::ostream& operator<<(std::ostream& o, const std::vector<T>& v) {
   std::copy(v.cbegin(), v.cend(), std::ostream_iterator<T>(o, " "));
   return o;
 }
 
 int main() {
-
   plt::title("Canvas");
   plt::axis("equal");
 

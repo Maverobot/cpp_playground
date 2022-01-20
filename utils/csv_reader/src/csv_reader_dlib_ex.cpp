@@ -1,14 +1,15 @@
-#include <algorithm>
 #include <csv_reader/csv_reader.h>
+#include <algorithm>
 #include <iostream>
 #include <string>
 
 #include <dlib/matrix.h>
 
 namespace my_dlib {
-template <typename T, size_t num_rows> struct MatrixData {
+template <typename T, size_t num_rows>
+struct MatrixData {
   MatrixData() = default;
-  MatrixData(const std::string &csv_line) {
+  MatrixData(const std::string& csv_line) {
     std::istringstream iss(csv_line);
     for (size_t idx_element = 0; idx_element < num_rows; idx_element++) {
       data(idx_element, 0) = parse_token<T>(iss);
@@ -17,10 +18,9 @@ template <typename T, size_t num_rows> struct MatrixData {
   dlib::matrix<T, num_rows, 1> data;
 };
 
-} // namespace my_dlib
+}  // namespace my_dlib
 
-int main(int argc, char *argv[]) {
-
+int main(int argc, char* argv[]) {
   /*
   auto sensor_data = load_csv_file<my_dlib::MatrixData<double, 13>>(argv[1]);
   std::cout << sensor_data[0].data << std::endl;

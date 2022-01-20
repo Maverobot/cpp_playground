@@ -10,8 +10,8 @@ using std::cout;
 
 int main() {
   using namespace ranges;
-  auto res1 = views::ints(1, unreachable) |
-              views::transform([](int i) { return i * i; }) | views::take(10);
+  auto res1 =
+      views::ints(1, unreachable) | views::transform([](int i) { return i * i; }) | views::take(10);
 
   auto res2 = res1 | view::reverse;
 

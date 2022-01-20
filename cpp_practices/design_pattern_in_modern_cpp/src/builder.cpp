@@ -14,7 +14,7 @@
 class EmailBuilder;
 
 class Email {
-public:
+ public:
   // Definition is below after the definition of EmailBuilder
   static EmailBuilder build();
 
@@ -25,7 +25,7 @@ public:
     return stream.str();
   }
 
-private:
+ private:
   // Restrict construction only to the builder.
   Email() = default;
   friend EmailBuilder;
@@ -36,34 +36,36 @@ private:
 };
 
 class EmailBuilder {
-public:
-  EmailBuilder &from(std::string from) noexcept {
+ public:
+  EmailBuilder& from(std::string from) noexcept {
     email_.from_ = from;
     return *this;
   }
-  EmailBuilder &to(std::string to) noexcept {
+  EmailBuilder& to(std::string to) noexcept {
     email_.to_ = to;
     return *this;
   }
-  EmailBuilder &subject(std::string subject) noexcept {
+  EmailBuilder& subject(std::string subject) noexcept {
     email_.subject_ = subject;
     return *this;
   }
-  EmailBuilder &body(std::string body) noexcept {
+  EmailBuilder& body(std::string body) noexcept {
     email_.body_ = body;
     return *this;
   }
-  operator Email &&() {
-    return std::move(email_); // notice the move
+  operator Email&&() {
+    return std::move(email_);  // notice the move
   }
 
-private:
+ private:
   Email email_;
 };
 
-EmailBuilder Email::build() { return EmailBuilder(); }
+EmailBuilder Email::build() {
+  return EmailBuilder();
+}
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   Email email = Email::build()
                     .from("sender")
                     .to("receiver")

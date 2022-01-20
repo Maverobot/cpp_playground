@@ -4,13 +4,14 @@
 #include <memory>
 
 struct CostFunctor {
-  template <typename T> bool operator()(T const *const x, T *residual) const {
+  template <typename T>
+  bool operator()(T const* const x, T* residual) const {
     residual[0] = T(100.0) - x[0] * x[0] + T(20) * cos(2 * M_PI * x[0]);
     return true;
   }
 };
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   google::InitGoogleLogging(argv[0]);
 
   // change the initial value to see different local minima
@@ -19,7 +20,7 @@ int main(int argc, char *argv[]) {
 
   ceres::Problem problem;
 
-  ceres::CostFunction *cost_function(
+  ceres::CostFunction* cost_function(
       new ceres::AutoDiffCostFunction<CostFunctor, 1, 1>(new CostFunctor));
 
   problem.AddResidualBlock(cost_function, NULL, &x);

@@ -1,6 +1,8 @@
 #include <iostream>
 
-[[nodiscard]] bool funcWithNoDiscard() { return true; }
+[[nodiscard]] bool funcWithNoDiscard() {
+  return true;
+}
 
 __attribute__((warn_unused_result)) bool funcWithUnusedResultWarning() {
   return true;
@@ -13,8 +15,7 @@ __attribute__((warn_unused_result)) bool funcWithUnusedResultWarning() {
 
 [[deprecated("This function is too old...")]] void oldFunc() {}
 
-int main(int /*argc*/, char * /*argv*/[]) {
-
+int main(int /*argc*/, char* /*argv*/[]) {
   funcWithNoDiscard();
   funcWithUnusedResultWarning();
 

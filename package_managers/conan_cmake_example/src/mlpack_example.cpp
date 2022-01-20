@@ -2,16 +2,17 @@
 #include <mlpack/methods/ann/ffn.hpp>
 #include <mlpack/methods/ann/rnn.hpp>
 
-arma::vec addNoise(const arma::vec &sequence, const double noise = 0.3) {
+arma::vec addNoise(const arma::vec& sequence, const double noise = 0.3) {
   return arma::randu(sequence.size()) * noise + sequence +
          arma::as_scalar(arma::randu(1) - 0.5) * noise;
 }
 
-void GenerateNoisySines(arma::cube &data, arma::mat &labels,
-                        const size_t num_points, const size_t num_sequences,
+void GenerateNoisySines(arma::cube& data,
+                        arma::mat& labels,
+                        const size_t num_points,
+                        const size_t num_sequences,
                         const double noise = 0.3) {
-  arma::colvec x = arma::linspace<arma::colvec>(0, num_points - 1, num_points) /
-                   num_points * 20.0;
+  arma::colvec x = arma::linspace<arma::colvec>(0, num_points - 1, num_points) / num_points * 20.0;
   arma::colvec y1 = arma::sin(x + arma::as_scalar(arma::randu(1)) * 3.0);
   arma::colvec y2 = arma::sin(x / 2.0 + arma::as_scalar(arma::randu(1)) * 3.0);
 
@@ -43,7 +44,7 @@ using namespace mlpack::ann;
 using namespace mlpack::optimization;
 using namespace mlpack;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   size_t successes = 0;
   const size_t rho = 4;
 
@@ -54,9 +55,7 @@ int main(int argc, char *argv[]) {
   arma::cube labels = arma::zeros<arma::cube>(1, labelsTemp.n_cols, rho);
   for (size_t i = 0; i < labelsTemp.n_cols; ++i) {
     const int value =
-        arma::as_scalar(
-            arma::find(arma::max(labelsTemp.col(i)) == labelsTemp.col(i), 1)) +
-        1;
+        arma::as_scalar(arma::find(arma::max(labelsTemp.col(i)) == labelsTemp.col(i), 1)) + 1;
     labels.tube(0, i).fill(value);
   }
 
@@ -80,8 +79,7 @@ int main(int argc, char *argv[]) {
   Linear<> lookup(1, 4);
   SigmoidLayer<> sigmoidLayer;
   Linear<> linear(4, 4);
-  Recurrent<> *recurrent =
-      new Recurrent<>(add, lookup, linear, sigmoidLayer, rho);
+  Recurrent<>* recurrent = new Recurrent<>(add, lookup, linear, sigmoidLayer, rho);
 
   RNN<> model(rho);
   model.Add<IdentityLayer<>>();
@@ -98,15 +96,12 @@ int main(int argc, char *argv[]) {
   size_t error = 0;
   for (size_t i = 0; i < prediction.n_cols; ++i) {
     const int predictionValue = arma::as_scalar(
-        arma::find(arma::max(prediction.slice(rho - 1).col(i)) ==
-                       prediction.slice(rho - 1).col(i),
+        arma::find(arma::max(prediction.slice(rho - 1).col(i)) == prediction.slice(rho - 1).col(i),
                    1) +
         1);
 
     const int targetValue =
-        arma::as_scalar(
-            arma::find(arma::max(labelsTemp.col(i)) == labelsTemp.col(i), 1)) +
-        1;
+        arma::as_scalar(arma::find(arma::max(labelsTemp.col(i)) == labelsTemp.col(i), 1)) + 1;
 
     if (predictionValue == targetValue) {
       error++;

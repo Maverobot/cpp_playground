@@ -31,13 +31,12 @@ using helloworld::HelloReply;
 using helloworld::HelloRequest;
 
 class GreeterClient {
-public:
-  GreeterClient(std::shared_ptr<Channel> channel)
-      : stub_(Greeter::NewStub(channel)) {}
+ public:
+  GreeterClient(std::shared_ptr<Channel> channel) : stub_(Greeter::NewStub(channel)) {}
 
   // Assembles the client's payload, sends it and presents the response back
   // from the server.
-  std::string SayHello(const std::string &user) {
+  std::string SayHello(const std::string& user) {
     // Data we are sending to the server.
     HelloRequest request;
     request.set_name(user);
@@ -56,23 +55,21 @@ public:
     if (status.ok()) {
       return reply.message();
     } else {
-      std::cout << status.error_code() << ": " << status.error_message()
-                << std::endl;
+      std::cout << status.error_code() << ": " << status.error_message() << std::endl;
       return "RPC failed";
     }
   }
 
-private:
+ private:
   std::unique_ptr<Greeter::Stub> stub_;
 };
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   // Instantiate the client. It requires a channel, out of which the actual RPCs
   // are created. This channel models a connection to an endpoint (in this case,
   // localhost at port 50051). We indicate that the channel isn't authenticated
   // (use of InsecureChannelCredentials()).
-  GreeterClient greeter(grpc::CreateChannel(
-      "localhost:50051", grpc::InsecureChannelCredentials()));
+  GreeterClient greeter(grpc::CreateChannel("localhost:50051", grpc::InsecureChannelCredentials()));
   for (;;) {
     std::string user;
     std::cin >> user;

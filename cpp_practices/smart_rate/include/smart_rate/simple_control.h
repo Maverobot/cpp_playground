@@ -1,7 +1,7 @@
 #pragma once
 
 class NoControl {
-public:
+ public:
   NoControl(double x_d) {}
 
   double get_command(double x_c, double x) { return x_c; }
@@ -9,7 +9,7 @@ public:
 
 class SimplePControl {
   // Problem: unstable in the early phase
-public:
+ public:
   SimplePControl(double x_d) : x_d(x_d) {}
 
   double get_command(double x_c, double x) {
@@ -17,7 +17,7 @@ public:
     return x_c;
   }
 
-private:
+ private:
   double x_d;
   double k_{0.1};
 };

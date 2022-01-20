@@ -9,7 +9,7 @@
 
 // Make std::array printable with std::cout
 template <class T, std::size_t N>
-std::ostream &operator<<(std::ostream &o, const std::array<T, N> &arr) {
+std::ostream& operator<<(std::ostream& o, const std::array<T, N>& arr) {
   copy(arr.cbegin(), arr.cend(), std::ostream_iterator<T>(o, " "));
   return o;
 }
@@ -19,12 +19,17 @@ std::ostream &operator<<(std::ostream &o, const std::array<T, N> &arr) {
  * std::array
  */
 struct get_type_size {
-  template <typename T> int operator()(T &&) const { return sizeof(T); }
+  template <typename T>
+  int operator()(T&&) const {
+    return sizeof(T);
+  }
 };
 
-template <typename T> struct value_match {
+template <typename T>
+struct value_match {
   value_match(T target) : target(target){};
-  template <typename U> bool operator()(U &&value) const {
+  template <typename U>
+  bool operator()(U&& value) const {
     if constexpr (std::is_same_v<std::decay_t<T>, std::decay_t<U>>) {
       if (value == target) {
         return true;
@@ -38,11 +43,10 @@ template <typename T> struct value_match {
 };
 
 template <typename Tuple, typename T>
-int getIndexByValue(Tuple &&tup, T &&value) {
-  auto flags = indices_trick_std::simple_test::execute_all(
-      value_match(std::forward<T>(value)), std::forward<Tuple>(tup));
-  auto iter =
-      std::find_if(flags.cbegin(), flags.cend(), [](auto &v) { return v; });
+int getIndexByValue(Tuple&& tup, T&& value) {
+  auto flags = indices_trick_std::simple_test::execute_all(value_match(std::forward<T>(value)),
+                                                           std::forward<Tuple>(tup));
+  auto iter = std::find_if(flags.cbegin(), flags.cend(), [](auto& v) { return v; });
   if (iter != flags.cend()) {
     return std::distance(flags.cbegin(), iter);
   }
@@ -56,13 +60,11 @@ void print_sequence(std::integer_sequence<T, ints...> int_seq) {
   std::cout << '\n';
 }
 
-int main(int argc, char *argv[]) {
-
+int main(int argc, char* argv[]) {
   std::tuple<int, char, float, double> tup{42, 'a', 0.99, 1.99};
   // Naive implementation with brute force
-  std::array<int, 4> arr{
-      get_type_size{}(std::get<0>(tup)), get_type_size{}(std::get<1>(tup)),
-      get_type_size{}(std::get<2>(tup)), get_type_size{}(std::get<3>(tup))};
+  std::array<int, 4> arr{get_type_size{}(std::get<0>(tup)), get_type_size{}(std::get<1>(tup)),
+                         get_type_size{}(std::get<2>(tup)), get_type_size{}(std::get<3>(tup))};
   std::cout << "Naive: " << arr << std::endl;
 
   // Indices trick with own indices builder
@@ -80,7 +82,7 @@ int main(int argc, char *argv[]) {
   // Print tuple
   std::cout << "Tuple (strangely in reverse order): ";
   indices_trick_std::execute_all(
-      [](const auto &element) {
+      [](const auto& element) {
         std::cout << element << " ";
         return nullptr;
       },

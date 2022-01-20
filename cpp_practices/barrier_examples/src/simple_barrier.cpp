@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include <atomic>
 #include <cassert>
 #include <condition_variable>
@@ -5,7 +6,6 @@
 #include <mutex>
 #include <string>
 #include <thread>
-#include <unistd.h>
 
 // clang-format off
 /* [WIP] This example tries to synchronize two threads in the following way:
@@ -28,8 +28,7 @@ void worker_a() {
       std::unique_lock<std::mutex> lock(mutex);
       state++;
       assert(state == 1);
-      std::cout << std::string("worker_a - first state++: ") +
-                       std::to_string(state) + "\n";
+      std::cout << std::string("worker_a - first state++: ") + std::to_string(state) + "\n";
       barrier1 = true;
     }
     workflow_cv.notify_one();
@@ -41,8 +40,7 @@ void worker_a() {
       barrier2 = false;
       state++;
       assert(state == 0);
-      std::cout << std::string("worker_a - second state++: ") +
-                       std::to_string(state) + "\n";
+      std::cout << std::string("worker_a - second state++: ") + std::to_string(state) + "\n";
     }
   }
 }
@@ -56,8 +54,7 @@ void worker_b() {
       barrier1 = false;
       state--;
       assert(state == 0);
-      std::cout << std::string("worker_b - first state--: ") +
-                       std::to_string(state) + "\n";
+      std::cout << std::string("worker_b - first state--: ") + std::to_string(state) + "\n";
     }
 
     // Second --
@@ -65,8 +62,7 @@ void worker_b() {
       std::unique_lock<std::mutex> lock(mutex);
       state--;
       assert(state == -1);
-      std::cout << std::string("worker_b - second state--: ") +
-                       std::to_string(state) + "\n";
+      std::cout << std::string("worker_b - second state--: ") + std::to_string(state) + "\n";
       barrier2 = true;
     }
     workflow_cv.notify_one();

@@ -28,7 +28,7 @@
 
 namespace routeguide {
 
-std::string GetDbFileContent(int argc, char **argv) {
+std::string GetDbFileContent(int argc, char** argv) {
   std::string db_path;
   std::string arg_str("--db_path");
   if (argc > 1) {
@@ -57,8 +57,8 @@ std::string GetDbFileContent(int argc, char **argv) {
 // exact form of [{"location": { "latitude": 123, "longitude": 456}, "name":
 // "the name can be empty" }, { ... } ... The spaces will be stripped.
 class Parser {
-public:
-  explicit Parser(const std::string &db) : db_(db) {
+ public:
+  explicit Parser(const std::string& db) : db_(db) {
     // Remove all spaces.
     db_.erase(std::remove_if(db_.begin(), db_.end(), isspace), db_.end());
     if (!Match("[")) {
@@ -68,7 +68,7 @@ public:
 
   bool Finished() { return current_ >= db_.size(); }
 
-  bool TryParseOne(Feature *feature) {
+  bool TryParseOne(Feature* feature) {
     if (failed_ || Finished() || !Match("{")) {
       return SetFailedAndReturnFalse();
     }
@@ -102,22 +102,21 @@ public:
     return true;
   }
 
-private:
+ private:
   bool SetFailedAndReturnFalse() {
     failed_ = true;
     return false;
   }
 
-  bool Match(const std::string &prefix) {
+  bool Match(const std::string& prefix) {
     bool eq = db_.substr(current_, prefix.size()) == prefix;
     current_ += prefix.size();
     return eq;
   }
 
-  void ReadLong(long *l) {
+  void ReadLong(long* l) {
     size_t start = current_;
-    while (current_ != db_.size() && db_[current_] != ',' &&
-           db_[current_] != '}') {
+    while (current_ != db_.size() && db_[current_] != ',' && db_[current_] != '}') {
       current_++;
     }
     // It will throw an exception if fails.
@@ -133,12 +132,10 @@ private:
   const std::string name_ = "\"name\":";
 };
 
-void ParseDb(const std::string &db, std::vector<Feature> *feature_list) {
+void ParseDb(const std::string& db, std::vector<Feature>* feature_list) {
   feature_list->clear();
   std::string db_content(db);
-  db_content.erase(
-      std::remove_if(db_content.begin(), db_content.end(), isspace),
-      db_content.end());
+  db_content.erase(std::remove_if(db_content.begin(), db_content.end(), isspace), db_content.end());
 
   Parser parser(db_content);
   Feature feature;
@@ -150,8 +147,7 @@ void ParseDb(const std::string &db, std::vector<Feature> *feature_list) {
       break;
     }
   }
-  std::cout << "DB parsed, loaded " << feature_list->size() << " features."
-            << std::endl;
+  std::cout << "DB parsed, loaded " << feature_list->size() << " features." << std::endl;
 }
 
-} // namespace routeguide
+}  // namespace routeguide

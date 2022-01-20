@@ -25,17 +25,15 @@
 // Behavior on unknown type is returning nullptr
 template <typename IdentifierType, typename AbstractProduct>
 class FactoryErrorNullptr {
-protected:
-  static AbstractProduct *onUnknownType(const IdentifierType &id) {
-    return nullptr;
-  }
+ protected:
+  static AbstractProduct* onUnknownType(const IdentifierType& id) { return nullptr; }
 };
 
 // Behavior on unknown type is returning nullptr
 template <typename IdentifierType, typename AbstractProduct>
 class FactoryErrorException {
-protected:
-  static AbstractProduct *onUnknownType(const IdentifierType &id) {
+ protected:
+  static AbstractProduct* onUnknownType(const IdentifierType& id) {
     throw std::invalid_argument("Unknown object type passed to Factory");
   }
 };
@@ -43,18 +41,17 @@ protected:
 // A generic function pointer which can be used to save any function
 typedef void (*VoidFunctionType)(void);
 
-template <typename AbstractProduct, typename IdentifierType,
-          template <typename, typename> class FactoryErrorPolicy =
-              FactoryErrorNullptr>
+template <typename AbstractProduct,
+          typename IdentifierType,
+          template <typename, typename> class FactoryErrorPolicy = FactoryErrorNullptr>
 class Factory : private FactoryErrorPolicy<IdentifierType, AbstractProduct> {
-public:
+ public:
   Factory() = default;
 
   template <typename T>
-  bool registerCreator(const IdentifierType &id, T creator) {
-    auto creator_pair =
-        std::make_pair(reinterpret_cast<VoidFunctionType>(+creator),
-                       std::type_index(typeid(+creator)));
+  bool registerCreator(const IdentifierType& id, T creator) {
+    auto creator_pair = std::make_pair(reinterpret_cast<VoidFunctionType>(+creator),
+                                       std::type_index(typeid(+creator)));
     auto it = associations_.find(id);
     // There exists creator function for this id
     if (it != associations_.cend()) {
@@ -62,43 +59,34 @@ public:
       if (it->second.add(creator_pair)) {
         return true;
       }
-      throw std::runtime_error(
-          "the creator function with same signature already exists.");
+      throw std::runtime_error("the creator function with same signature already exists.");
     }
-    return associations_.insert(std::make_pair(id, FunctionTypes(creator_pair)))
-        .second;
+    return associations_.insert(std::make_pair(id, FunctionTypes(creator_pair))).second;
   };
-  bool unregisterCreator(const IdentifierType &id) {
-    return associations_.erase(id) == 1;
-  }
+  bool unregisterCreator(const IdentifierType& id) { return associations_.erase(id) == 1; }
 
   template <typename... Args>
-  AbstractProduct *createObject(const IdentifierType &id,
-                                Args &&... args) const {
+  AbstractProduct* createObject(const IdentifierType& id, Args&&... args) const {
     auto i = associations_.find(id);
     if (i != associations_.end()) {
-      auto given_signature =
-          std::type_index(typeid(AbstractProduct * (*)(Args...)));
+      auto given_signature = std::type_index(typeid(AbstractProduct * (*)(Args...)));
       auto generic_func = i->second.get(given_signature, args...);
-      auto creator_func =
-          reinterpret_cast<AbstractProduct *(*)(Args...)>(generic_func);
+      auto creator_func = reinterpret_cast<AbstractProduct* (*)(Args...)>(generic_func);
       return creator_func(std::forward<Args>(args)...);
     }
     return ErrorPolicy::onUnknownType(id);
   }
 
-private:
+ private:
   class FunctionTypes {
-  public:
+   public:
     using FunctionType = std::pair<VoidFunctionType, std::type_index>;
 
-    explicit FunctionTypes(FunctionType type) {
-      fs_.push_back(std::move(type));
-    }
+    explicit FunctionTypes(FunctionType type) { fs_.push_back(std::move(type)); }
 
     bool add(FunctionType function_type) {
       // Add if the type does not exist yet
-      if (std::find_if(fs_.cbegin(), fs_.cend(), [&function_type](auto &x) {
+      if (std::find_if(fs_.cbegin(), fs_.cend(), [&function_type](auto& x) {
             return x.second == function_type.second;
           }) != fs_.cend()) {
         return false;
@@ -108,7 +96,7 @@ private:
     }
 
     template <typename... Args>
-    VoidFunctionType get(const std::type_index &signature, Args... args) const {
+    VoidFunctionType get(const std::type_index& signature, Args... args) const {
       for (auto func_type : fs_) {
         auto saved_signature = func_type.second;
         if (signature == saved_signature) {
@@ -118,7 +106,7 @@ private:
       throw std::runtime_error("no matching function.");
     }
 
-  private:
+   private:
     std::vector<FunctionType> fs_;
   };
 
@@ -130,16 +118,12 @@ private:
 
 // Example dummy classes
 struct Fruit {
-  virtual void info() const {
-    std::cout << "This is an abstract fruit" << std::endl;
-  }
+  virtual void info() const { std::cout << "This is an abstract fruit" << std::endl; }
 };
 
 struct Apple : Fruit {
   Apple() = default;
-  explicit Apple(int age) {
-    std::cout << "created an apple with age of " << age << std::endl;
-  }
+  explicit Apple(int age) { std::cout << "created an apple with age of " << age << std::endl; }
   explicit Apple(std::string info) {
     std::cout << "created an apple with info: " << info << std::endl;
   }
@@ -152,36 +136,31 @@ struct Pear : Fruit {
   void info() const override { std::cout << "This is a Pear" << std::endl; }
 };
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   // Prepare factory
   Factory<Fruit, std::string> fruit_factory;
 
   // 3 Apple creators
+  fruit_factory.registerCreator("Apple", []() -> Fruit* { return new Apple(); });
+
+  fruit_factory.registerCreator("Apple", [](int age) -> Fruit* { return new Apple(age); });
+
   fruit_factory.registerCreator("Apple",
-                                []() -> Fruit * { return new Apple(); });
-
-  fruit_factory.registerCreator(
-      "Apple", [](int age) -> Fruit * { return new Apple(age); });
-
-  fruit_factory.registerCreator(
-      "Apple", [](std::string info) -> Fruit * { return new Apple(info); });
+                                [](std::string info) -> Fruit* { return new Apple(info); });
 
   // 1 Banana creator
-  fruit_factory.registerCreator("Banana",
-                                []() -> Fruit * { return new Banana(); });
+  fruit_factory.registerCreator("Banana", []() -> Fruit* { return new Banana(); });
 
   // 1 Pear creator
-  fruit_factory.registerCreator("Pear", []() -> Fruit * { return new Pear(); });
+  fruit_factory.registerCreator("Pear", []() -> Fruit* { return new Pear(); });
 
   // Create apple, banana, pear and some unknown fruit
   std::unique_ptr<Fruit> apple_ptr(fruit_factory.createObject("Apple"));
   std::unique_ptr<Fruit> apple_ptr2(fruit_factory.createObject("Apple", 8));
-  std::unique_ptr<Fruit> apple_ptr3(
-      fruit_factory.createObject("Apple", std::string("awesome")));
+  std::unique_ptr<Fruit> apple_ptr3(fruit_factory.createObject("Apple", std::string("awesome")));
   std::unique_ptr<Fruit> banana_ptr(fruit_factory.createObject("Banana"));
   std::unique_ptr<Fruit> pear_ptr(fruit_factory.createObject("Pear"));
-  std::unique_ptr<Fruit> unknown_fruit_ptr(
-      fruit_factory.createObject("Unknown"));
+  std::unique_ptr<Fruit> unknown_fruit_ptr(fruit_factory.createObject("Unknown"));
 
   // Check info
   apple_ptr->info();
