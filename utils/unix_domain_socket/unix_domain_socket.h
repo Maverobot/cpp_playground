@@ -4,6 +4,8 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
+#include <thread>
+#include <vector>
 
 namespace uds {
 
@@ -86,13 +88,22 @@ public:
   }
 
   void accept() {
-    int socket_descriptor;
-    // Awaits a connection on socket FD
-    if ((socket_descriptor = ::accept(file_descriptor_, NULL, NULL)) == -1) {
-      internal::throw_errno("accept error: ");
+    std::vector<std::thread> threads;
+    while (true) {
+      int socket_descriptor;
+      // Awaits a connection on socket FD
+      if ((socket_descriptor = ::accept(file_descriptor_, NULL, NULL)) == -1) {
+        internal::throw_errno("accept error: ");
+      }
+      printf("Connected.\n");
+      threads.emplace_back(&UnixDomainSocketServer::readStream, socket_descriptor);
     }
-    printf("Connected.\n");
+  }
 
+ private:
+  int file_descriptor_;
+
+  static void readStream(int socket_descriptor) {
     char buf[100];
     int read_count;
     while ((read_count = read(socket_descriptor, buf, sizeof(buf))) > 0) {
@@ -105,8 +116,5 @@ public:
       printf("Disconnected.\n");
     }
   }
-
-private:
-  int file_descriptor_;
 };
-} // namespace uds
+}  // namespace uds
