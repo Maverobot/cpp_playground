@@ -10,3 +10,5 @@ add_executable(server server.cpp)
 target_link_libraries(server PRIVATE Threads::Threads)
 
 add_executable(client client.cpp)
+
+add_executable(socket_pair_example socket_pair_example.cpp)
