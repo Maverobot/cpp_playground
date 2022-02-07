@@ -14,8 +14,11 @@ target_compile_features(delegate_example PRIVATE cxx_std_17)
 add_executable(unwrap_reference src/unwrap_reference.cpp)
 target_compile_features(unwrap_reference PRIVATE cxx_std_17)
 
-add_executable(template_specialization_type_list src/template_specialization_type_list.cpp)
-target_compile_features(template_specialization_type_list PRIVATE cxx_std_17)
+add_executable(class_template_specialization_type_list src/class_template_specialization_type_list.cpp)
+target_compile_features(class_template_specialization_type_list PRIVATE cxx_std_17)
+
+add_executable(sfinae src/sfinae.cpp)
+target_compile_features(sfinae PRIVATE cxx_std_17)
 
 add_executable(defer src/defer.cpp)
 target_compile_features(defer PRIVATE cxx_std_17)
