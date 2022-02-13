@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+    "name": "gdb: hello",
+    "type": "cppdbg",
+    "request": "launch",
+    "program": "${fileDirname}/build/hello",
+    "args": [],
+    "stopAtEntry": false,
+    "cwd": "${fileDirname}/build",
+    "environment": [],
+    "externalConsole": false,
+    "MIMode": "gdb"
+  }
+  ]
+}
