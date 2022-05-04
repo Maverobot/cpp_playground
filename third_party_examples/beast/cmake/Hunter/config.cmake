@@ -1,0 +1,6 @@
+hunter_config(
+  Boost
+  VERSION "1.78.0"
+  CONFIGURATION_TYPES "Release"
+  CMAKE_ARGS IOSTREAMS_NO_BZIP2=1
+)
