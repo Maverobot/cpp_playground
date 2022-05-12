@@ -3,6 +3,18 @@
 
 #include <hello-tp.h>
 
+/**
+
+Run the following commands in a terminal:
+
+lttng destroy
+lttng create hello-session --live
+lttng enable-event --userspace hello_world:my_first_tracepoint
+lttng start
+babeltrace2 "net://localhost/host/$(hostname)/hello-session"
+
+*/
+
 void addTrace(const std::string& message) {
   tracepoint(hello_world, my_first_tracepoint, const_cast<char*>(message.c_str()));
 }
