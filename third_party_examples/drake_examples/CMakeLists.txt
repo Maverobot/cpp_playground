@@ -3,11 +3,15 @@ cmake_minimum_required(VERSION 3.5.1)
 project(drake_examples)
 
 find_program(LSB_RELEASE_EXEC lsb_release)
-execute_process(COMMAND ${LSB_RELEASE_EXEC} -cs
+execute_process(
+  COMMAND ${LSB_RELEASE_EXEC} -cs
   OUTPUT_VARIABLE LSB_RELEASE_CODENAME
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-  )
-if(${LSB_RELEASE_CODENAME} STREQUAL "focal")
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
+if(${LSB_RELEASE_CODENAME} STREQUAL "jammy")
+  message(STATUS "Using gcc-11 for Ubuntu 22.04")
+  set(CMAKE_C_COMPILER /usr/bin/gcc-11)
+  set(CMAKE_CXX_COMPILER /usr/bin/g++-11)
+elseif(${LSB_RELEASE_CODENAME} STREQUAL "focal")
   message(STATUS "Using gcc-9 for Ubuntu 20.04")
   set(CMAKE_C_COMPILER /usr/bin/gcc-9)
   set(CMAKE_CXX_COMPILER /usr/bin/g++-9)
@@ -30,5 +34,9 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 add_subdirectory(hello_world)
 add_subdirectory(cart_pole)
 add_subdirectory(acrobot)
-add_subdirectory(iiwa)
-add_subdirectory(panda)
+
+# TODO: Still does not work yet
+# add_subdirectory(panda)
+
+# TODO: Too many breaking changes must be handled when the version goes from 0.29 to 1.7
+# add_subdirectory(iiwa)

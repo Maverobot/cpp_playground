@@ -51,7 +51,7 @@ int DoMain() {
   const char* kModelPath = "../panda/robots/panda_arm.urdf";
   const std::string urdf = (!FLAGS_urdf.empty() ? FLAGS_urdf : fs::canonical(kModelPath).string());
   auto iiwa_instance = multibody::Parser(&plant, &scene_graph).AddModelFromFile(urdf);
-  plant.WeldFrames(plant.world_frame(), plant.GetFrameByName("base"));
+  plant.WeldFrames(plant.world_frame(), plant.GetFrameByName("world"));
   plant.Finalize();
 
   // Creates and adds LCM publisher for visualization.

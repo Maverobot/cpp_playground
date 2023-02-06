@@ -15,7 +15,6 @@
 #include "drake/systems/controllers/linear_quadratic_regulator.h"
 #include "drake/systems/framework/diagram_builder.h"
 #include "drake/systems/primitives/affine_system.h"
-#include "drake/systems/rendering/pose_bundle_to_draw_message.h"
 
 namespace drake {
 
