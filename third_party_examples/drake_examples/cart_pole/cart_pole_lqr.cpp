@@ -3,14 +3,15 @@
 // fixed if the system starts with pole underneath.
 
 #include <experimental/filesystem>
+#include <iostream>
 #include <memory>
 #include <string>
 
 #include <gflags/gflags.h>
 
+#include <drake/geometry/meshcat_visualizer.h>
 #include "drake/common/drake_assert.h"
 #include "drake/common/find_resource.h"
-#include "drake/geometry/drake_visualizer.h"
 #include "drake/geometry/scene_graph.h"
 #include "drake/lcm/drake_lcm.h"
 #include "drake/multibody/parsing/parser.h"
@@ -145,7 +146,8 @@ int do_main() {
   builder.Connect(cart_pole.get_geometry_poses_output_port(),
                   scene_graph.get_source_pose_port(cart_pole.get_source_id().value()));
 
-  geometry::DrakeVisualizer<double>::AddToBuilder(&builder, scene_graph);
+  auto meshcat = std::make_shared<drake::geometry::Meshcat>(8080);
+  geometry::MeshcatVisualizer<double>::AddToBuilder(&builder, scene_graph, meshcat);
   auto diagram = builder.Build();
 
   // Create a context for this system:
@@ -167,6 +169,8 @@ int do_main() {
 
   simulator.set_publish_every_time_step(false);
   simulator.set_target_realtime_rate(FLAGS_target_realtime_rate);
+  std::cout << "Simulation is ready. Press enter to continue ...";
+  std::cin.ignore();
   simulator.Initialize();
   simulator.AdvanceTo(FLAGS_simulation_time);
 
