@@ -36,6 +36,12 @@ target_compile_features(exit_scope PRIVATE cxx_std_17)
 add_executable(type_erasure src/type_erasure.cpp)
 target_compile_features(type_erasure PRIVATE cxx_std_17)
 
+add_executable(integer_to_bool_array src/integer_to_bool_array.cpp)
+target_compile_features(integer_to_bool_array PRIVATE cxx_std_17)
+
+add_executable(reservoir_sampling src/reservoir_sampling.cpp)
+target_compile_features(reservoir_sampling PRIVATE cxx_std_17)
+
 find_package(Eigen3 REQUIRED)
 
 # Download struct_magic if it cannot be found locally
