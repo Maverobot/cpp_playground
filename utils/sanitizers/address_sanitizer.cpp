@@ -85,6 +85,6 @@ int main(int argc, const char* argv[]) {
   }
 
   printf("Invalid index. \n");
-  printf("Usage: %s [1-4]\n", argv[0]);
+  printf("Usage: %s [1-7]\n", argv[0]);
   return 1;
 }
