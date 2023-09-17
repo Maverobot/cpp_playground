@@ -1,0 +1,7 @@
+#+title: Expression Templates
+
+Expression templates is a template programming technique, which was initially introduced to
+support efficient operations on array classes.
+
+Is is shown here how it can be implemented to make the array operations more lazy and use
+no temporary objects.
