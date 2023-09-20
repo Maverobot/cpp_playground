@@ -6,15 +6,15 @@
 #include "array.h"
 #include "traits.h"
 
-template <typename T, typename OP1, typename OP2>
-class Add {
+template <typename T, typename OP1, typename OP2, typename FunctionOP>
+class BinaryOperator {
  private:
   typename Traits<OP1>::ExprRef op1_;
   typename Traits<OP2>::ExprRef op2_;
 
  public:
-  Add(const OP1& op1, const OP2& op2) : op1_(op1), op2_(op2) {}
-  T operator[](size_t index) const { return op1_[index] + op2_[index]; }
+  BinaryOperator(const OP1& op1, const OP2& op2) : op1_(op1), op2_(op2) {}
+  T operator[](size_t index) const { return FunctionOP()(op1_[index], op2_[index]); }
   std::size_t size() const {
     assert(op1_.size() == 0 || op2_.size() || op1_.size() == op2_.size());
     return op1_.size() == 0 ? op2_.size() : op1_.size();
@@ -22,19 +22,10 @@ class Add {
 };
 
 template <typename T, typename OP1, typename OP2>
-class Mul {
- private:
-  typename Traits<OP1>::ExprRef op1_;
-  typename Traits<OP2>::ExprRef op2_;
+using Add = BinaryOperator<T, OP1, OP2, std::plus<T>>;
 
- public:
-  Mul(const OP1& op1, const OP2& op2) : op1_(op1), op2_(op2) {}
-  T operator[](size_t index) const { return op1_[index] * op2_[index]; }
-  std::size_t size() const {
-    assert(op1_.size() == 0 || op2_.size() || op1_.size() == op2_.size());
-    return op1_.size() == 0 ? op2_.size() : op1_.size();
-  }
-};
+template <typename T, typename OP1, typename OP2>
+using Mul = BinaryOperator<T, OP1, OP2, std::multiplies<T>>;
 
 template <typename T, typename Rep>
 auto operator+(const T& lhs, const Array<T, Rep>& rhs) {
