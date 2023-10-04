@@ -6,6 +6,9 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+add_executable(crtp src/crtp.cpp)
+target_compile_features(crtp PRIVATE cxx_std_17)
+
 add_executable(decorator_mixins src/decorator_mixins.cpp)
 target_compile_features(decorator_mixins PRIVATE cxx_std_17)
 
