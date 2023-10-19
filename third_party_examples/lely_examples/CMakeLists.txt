@@ -35,3 +35,5 @@ target_link_libraries(slave ${LELY_LIBRARIES})
 add_executable(master master.cpp)
 target_link_libraries(master ${LELY_LIBRARIES})
 add_dependencies(master dcfgen-master-config)
+
+add_executable(dcf_parameter_finder dcf_parameter_finder.cpp)
