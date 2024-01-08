@@ -1,5 +1,3 @@
-// valgrind --leak-check=full --show-leak-kinds=all ./memory_leak
-
 int main() {
   // OK
   int* p = new int;
@@ -9,3 +7,5 @@ int main() {
   int* q = new int;
   // no delete
 }
+
+// valgrind --leak-check=full --show-leak-kinds=all ./memory_leak
