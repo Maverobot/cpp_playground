@@ -54,7 +54,7 @@ void nullpointerDereference() {
 
 int main(int argc, const char* argv[]) {
   if (argc != 2) {
-    printf("Usage: %s [1-4]\n", argv[0]);
+    printf("Usage: %s [1-7]\n", argv[0]);
     return 1;
   }
 
