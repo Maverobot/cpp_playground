@@ -15,3 +15,4 @@ endfunction()
 
 add_example(single_process)
 add_example(filter_stream)
+add_example(compress_command_output)
