@@ -4,7 +4,7 @@ project(boost)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Boost 1.7 REQUIRED COMPONENTS thread filesystem)
+find_package(Boost 1.7 REQUIRED COMPONENTS thread filesystem iostreams)
 
 function(add_example name)
   add_executable(${name} ${name}.cpp)
@@ -14,4 +14,4 @@ function(add_example name)
 endfunction()
 
 add_example(single_process)
-add_example(piped_process)
+add_example(filter_stream)
