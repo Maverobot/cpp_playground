@@ -42,6 +42,9 @@ target_compile_features(integer_to_bool_array PRIVATE cxx_std_17)
 add_executable(reservoir_sampling src/reservoir_sampling.cpp)
 target_compile_features(reservoir_sampling PRIVATE cxx_std_17)
 
+add_executable(bitset_to_int src/bitset_to_int.cpp)
+target_compile_features(bitset_to_int PRIVATE cxx_std_17)
+
 find_package(Eigen3 REQUIRED)
 
 # Download struct_magic if it cannot be found locally
