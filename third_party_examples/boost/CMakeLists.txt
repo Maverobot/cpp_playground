@@ -14,6 +14,7 @@ function(add_example name)
 endfunction()
 
 add_example(single_process)
+add_example(two_processes)
 add_example(filter_stream)
 add_example(compress_command_output)
 add_example(async_compress_command_output)
