@@ -8,6 +8,7 @@
 #else
 #error This file requires Windows or Linux.
 #endif
+#include <lely/coapp/fiber_driver.hpp>
 #include <lely/coapp/slave.hpp>
 #include <lely/io2/sys/io.hpp>
 #include <lely/io2/sys/sigset.hpp>
@@ -21,11 +22,38 @@
 
 using namespace lely;
 
-class MySlave : public canopen::BasicSlave {
+class MySlave : canopen::detail::FiberDriverBase, public canopen::BasicSlave {
  public:
   using BasicSlave::BasicSlave;
 
+  template <typename... Args>
+  explicit MySlave(ev_exec_t* exec, Args&&... args)
+      : FiberDriverBase(exec), BasicSlave(FiberDriverBase::exec, std::forward<Args>(args)...) {
+    repeatedly_execute();
+  }
+
  protected:
+  void wait(lely::canopen::SdoFuture<void> f) {
+    fiber_await(f);
+    try {
+      return f.get().value();
+    } catch (const ev::future_not_ready& e) {
+      util::throw_error_code("Wait", ::std::errc::operation_canceled);
+    }
+  }
+
+  void repeatedly_execute() {
+    strand.defer([this]() {
+      // Log the value just written to the local object dictionary.
+      printf("Execute repeatedly\n");
+
+      // Trigger the next execution every 1 second.
+      wait(AsyncWait(std::chrono::seconds(1)));
+
+      repeatedly_execute();
+    });
+  }
+
   // This function gets called every time a value is written to the local object
   // dictionary by an SDO or RPDO.
   void OnWrite(uint16_t idx, uint8_t subidx) noexcept override {
@@ -77,7 +105,7 @@ int main() {
   chan.open(ctrl);
 
   // Create a CANopen slave with node-ID 2.
-  MySlave slave(timer, chan, "cpp-slave.eds", "", 2);
+  MySlave slave(exec, timer, chan, "cpp-slave.eds", "", 2);
 
   // Create a signal handler.
   io::SignalSet sigset(poll, exec);
