@@ -16,7 +16,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cpp-slave.eds ${CMAKE_BINARY_DIR}/cpp
 find_program(DCFGEN_PROG dcfgen REQUIRED DOC "'dcfgen' executable")
 add_custom_command(
   OUTPUT ${CMAKE_BINARY_DIR}/master.dcf
-  COMMAND ${DCFGEN_PROG} -r ${CMAKE_CURRENT_SOURCE_DIR}/cpp-tutorial.yml
+  COMMAND ${DCFGEN_PROG} -r --no-strict ${CMAKE_CURRENT_SOURCE_DIR}/cpp-tutorial.yml
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cpp-tutorial.yml
   COMMENT "Generate master.dcf file from cpp-tutorial.yml"
