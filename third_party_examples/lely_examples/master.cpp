@@ -19,6 +19,8 @@
 #include <thread>
 #endif
 
+#include "syslog_diag_handler.h"
+
 using namespace std::chrono_literals;
 using namespace lely;
 
@@ -130,6 +132,8 @@ int main() {
   // Create a timer using a monotonic clock, i.e., a clock that is not affected
   // by discontinuous jumps in the system time.
   io::Timer timer(poll, exec, CLOCK_MONOTONIC);
+
+  set_lely_diag_handler_with_syslog();
 #if _WIN32
   // Create an IXXAT CAN controller and channel. The VCI requires us to
   // explicitly specify the bitrate and restart the controller.
