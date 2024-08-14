@@ -4,5 +4,10 @@ project(tcp_socket)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(server server.cpp)
-add_executable(client client.cpp)
+# TCP server and client in C
+add_executable(server_c server.c)
+add_executable(client_c client.c)
+
+
+# TCP client in C++
+add_executable(client_cpp client.cpp)
