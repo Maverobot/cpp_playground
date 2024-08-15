@@ -35,6 +35,10 @@ int main(int argc, char* argv[]) {
   }
 
   printf("Binding socket to local address...\n");
+  const int yes = 1;
+  if (setsockopt(socket_listen, SOL_SOCKET, SO_REUSEADDR, (void*)&yes, sizeof(yes)) < 0) {
+    fprintf(stderr, "setsockopt() failed. (%d)\n", errno);
+  }
   if (bind(socket_listen, bind_address->ai_addr, bind_address->ai_addrlen)) {
     fprintf(stderr, "bind() failed. (%d)\n", errno);
     exit(1);
