@@ -15,15 +15,16 @@ class TCPSocketClient {
   TCPSocketClient(std::string hostname,
                   uint16_t port,
                   std::function<void(void* message, size_t message_length)> on_message_received)
-      : on_message_received_(on_message_received) {
+      : addr_info_{nullptr, freeaddrinfo}, on_message_received_{on_message_received} {
     printf("Configuring remote address...\n");
     struct addrinfo hints;
     memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
     struct addrinfo* peer_address;
     getaddrinfo(hostname.c_str(), std::to_string(port).c_str(), &hints,
                 &peer_address);  // For easy switching between IPv4 and IPv6
-
+    this->addr_info_.reset(peer_address);
     printf("Rmote address is: ");
     char address_buffer[100];
     char service_buffer[100];
@@ -32,24 +33,7 @@ class TCPSocketClient {
                 NI_NUMERICHOST | NI_NUMERICSERV);
     printf("%s %s\n", address_buffer, service_buffer);
 
-    printf("Creating socket...\n");
-    socket_peer_ =
-        socket(peer_address->ai_family, peer_address->ai_socktype, peer_address->ai_protocol);
-
-    if (socket_peer_ < 0) {
-      fprintf(stderr, "socket() failed. (%d)\n", socket_peer_);
-      return;
-    }
-
-    printf("Connecting...\n");
-    if (connect(socket_peer_, peer_address->ai_addr, peer_address->ai_addrlen)) {
-      fprintf(stderr, "connect() failed. (%d)\n", socket_peer_);
-      return;
-    }
-    freeaddrinfo(peer_address);
-    printf("Connected.\n");
-
-    receive_thread_ = std::thread(&TCPSocketClient::receive_message, this);
+    connect();
   }
 
   ~TCPSocketClient() {
@@ -61,7 +45,34 @@ class TCPSocketClient {
     printf("Finished.\n");
   }
 
+  bool connect() {
+    printf("Creating socket...\n");
+    socket_peer_ = socket(this->addr_info_->ai_family, this->addr_info_->ai_socktype,
+                          this->addr_info_->ai_protocol);
+    if (socket_peer_ < 0) {
+      fprintf(stderr, "socket() failed. (%d)\n", socket_peer_);
+      return false;
+    }
+
+    printf("Connecting...\n");
+    if (::connect(socket_peer_, this->addr_info_->ai_addr, this->addr_info_->ai_addrlen)) {
+      fprintf(stderr, "Failed. (%s)\n", strerror(errno));
+      return false;
+    }
+    if (receive_thread_.joinable()) {
+      receive_thread_.join();
+    }
+    receive_thread_ = std::thread(&TCPSocketClient::receive_message, this);
+    connected_ = true;
+    return true;
+  }
+
   void send_message(const void* message, ssize_t message_length) {
+    if (!this->connected_) {
+      if (!this->connect()) {
+        return;
+      }
+    }
     int bytes_sent = send(socket_peer_, message, message_length, 0);
     printf("Sent %d bytes.\n", bytes_sent);
   }
@@ -88,6 +99,7 @@ class TCPSocketClient {
         int bytes_received = recv(socket_peer_, read, 4096, 0);
         if (bytes_received < 1) {
           printf("Connection closed by peer.\n");
+          connected_ = false;
           break;
         }
         printf("Received: %.*s", bytes_received, read);
@@ -98,9 +110,11 @@ class TCPSocketClient {
 
  private:
   int socket_peer_;
+  std::unique_ptr<struct addrinfo, decltype(&freeaddrinfo)> addr_info_;
   std::function<void(void* message, size_t message_length)> on_message_received_;
   std::thread receive_thread_;
   std::atomic<bool> running_{true};
+  std::atomic<bool> connected_{false};
 };
 
 // This is a simple TCP client that connects to a server and sends and receives data.
