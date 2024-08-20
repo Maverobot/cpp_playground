@@ -17,6 +17,9 @@ target_compile_features(unwrap_reference PRIVATE cxx_std_17)
 add_executable(class_template_specialization_type_list src/class_template_specialization_type_list.cpp)
 target_compile_features(class_template_specialization_type_list PRIVATE cxx_std_17)
 
+add_executable(char src/char.cpp)
+target_compile_features(char PRIVATE cxx_std_17)
+
 add_executable(sfinae src/sfinae.cpp)
 target_compile_features(sfinae PRIVATE cxx_std_17)
 
