@@ -1,4 +1,5 @@
 #include <lely/ev/loop.hpp>
+
 #if _WIN32
 #include <lely/io2/win32/ixxat.hpp>
 #include <lely/io2/win32/poll.hpp>
@@ -42,6 +43,39 @@ class MyDriver : public canopen::FiberDriver {
     } else {
       std::cout << "slave " << static_cast<int>(id()) << " failed to boot: " << what << std::endl;
     }
+  }
+
+  void OnState(lely::canopen::NmtState nmt_state) noexcept override {
+    std::string nmt_state_str;
+
+    switch (nmt_state) {
+      case canopen::NmtState::BOOTUP:
+        nmt_state_str = "BOOTUP";
+        break;
+      case canopen::NmtState::STOP:
+        nmt_state_str = "STOP";
+        break;
+      case canopen::NmtState::START:
+        nmt_state_str = "START";
+        break;
+      case canopen::NmtState::RESET_NODE:
+        nmt_state_str = "RESET_NODE";
+        break;
+      case canopen::NmtState::RESET_COMM:
+        nmt_state_str = "RESET_COMM";
+        break;
+      case canopen::NmtState::PREOP:
+        nmt_state_str = "PREOP";
+        break;
+      case canopen::NmtState::TOGGLE:
+        nmt_state_str = "TOGGLE";
+        break;
+      default:
+        nmt_state_str = "UNKNOWN";
+        break;
+    }
+
+    std::cout << "slave " << static_cast<int>(id()) << " state: " << nmt_state_str << std::endl;
   }
 
   // This function gets called during the boot-up process for the slave. The
@@ -110,7 +144,12 @@ class MyDriver : public canopen::FiberDriver {
   }
 };
 
-int main() {
+int main(int argc, char* argv[]) {
+  if (argc != 2) {
+    std::cerr << "Usage: " << argv[0] << " <can-interface>" << std::endl;
+    return 1;
+  }
+
   // Initialize the I/O library. This is required on Windows, but a no-op on
   // Linux (for now).
   io::IoGuard io_guard;
@@ -143,7 +182,7 @@ int main() {
 #elif defined(__linux__)
   // Create a virtual SocketCAN CAN controller and channel, and do not modify
   // the current CAN bus state or bitrate.
-  io::CanController ctrl("vcan0");
+  io::CanController ctrl(argv[1]);
   io::CanChannel chan(poll, exec);
 #endif
   chan.open(ctrl);

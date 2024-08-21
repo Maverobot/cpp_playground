@@ -18,6 +18,8 @@
 #include <thread>
 #endif
 
+#include <iostream>
+
 #include "syslog_diag_handler.h"
 
 using namespace lely;
@@ -66,7 +68,11 @@ class MySlave : canopen::detail::FiberDriverBase, public canopen::BasicSlave {
   }
 };
 
-int main() {
+int main(int argc, char* argv[]) {
+  if (argc != 2) {
+    std::cerr << "Usage: " << argv[0] << " <can-interface>" << std::endl;
+  }
+
   // Initialize the I/O library. This is required on Windows, but a no-op on
   // Linux (for now).
   io::IoGuard io_guard;
@@ -99,7 +105,7 @@ int main() {
 #elif defined(__linux__)
   // Create a virtual SocketCAN CAN controller and channel, and do not modify
   // the current CAN bus state or bitrate.
-  io::CanController ctrl("vcan0");
+  io::CanController ctrl(argv[1]);
   io::CanChannel chan(poll, exec);
 #endif
   chan.open(ctrl);
