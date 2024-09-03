@@ -36,4 +36,8 @@ add_executable(master master.cpp)
 target_link_libraries(master ${LELY_LIBRARIES})
 add_dependencies(master dcfgen-master-config)
 
+add_executable(master_manual_sync master_manual_sync.cpp)
+target_link_libraries(master_manual_sync ${LELY_LIBRARIES})
+add_dependencies(master_manual_sync dcfgen-master-config)
+
 add_executable(dcf_parameter_finder dcf_parameter_finder.cpp)
