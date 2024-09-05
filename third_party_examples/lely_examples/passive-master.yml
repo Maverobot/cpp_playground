@@ -1,0 +1,23 @@
+master:
+  node_id: 0x7e
+
+slave:
+  dcf: "cpp-slave.eds"
+  node_id: 1
+  boot: false
+  reset_communication: false
+  # Those TPDO settings are necessary for passive master because it does not read the settings from the device
+  tpdo:
+    1:
+      enabled: true
+      cob_id: 0x181
+      transmission: 0xff
+      mapping:
+        - {index: 0x4001, sub_index: 0x00}
+  rpdo:
+    1:
+      enabled: true
+      cob_id: 0x201
+      transmission: 0xff
+      mapping:
+        - {index: 0x4000, sub_index: 0x00}

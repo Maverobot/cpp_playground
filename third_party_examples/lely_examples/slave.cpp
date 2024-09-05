@@ -46,8 +46,7 @@ class MySlave : canopen::detail::FiberDriverBase, public canopen::BasicSlave {
 
   void repeatedly_execute() {
     strand.defer([this]() {
-      // Log the value just written to the local object dictionary.
-      printf("Execute repeatedly\n");
+      // printf("Execute repeatedly\n");
 
       // Trigger the next execution every 1 second.
       wait(AsyncWait(std::chrono::seconds(1)));
@@ -62,6 +61,7 @@ class MySlave : canopen::detail::FiberDriverBase, public canopen::BasicSlave {
     if (idx == 0x4000 && subidx == 0) {
       // Read the value just written to object 4000:00, probably by RPDO 1.
       uint32_t val = (*this)[0x4000][0];
+      std::cout << "Received value: " << val << std::endl;
       // Copy it to object 4001:00, so that it will be sent by the next TPDO.
       (*this)[0x4001][0] = val;
     }
@@ -111,7 +111,7 @@ int main(int argc, char* argv[]) {
   chan.open(ctrl);
 
   // Create a CANopen slave with node-ID 2.
-  MySlave slave(exec, timer, chan, "cpp-slave.eds", "", 2);
+  MySlave slave(exec, timer, chan, "cpp-slave.eds", "", 1);
 
   // Create a signal handler.
   io::SignalSet sigset(poll, exec);

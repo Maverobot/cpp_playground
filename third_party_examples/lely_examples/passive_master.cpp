@@ -25,27 +25,6 @@
 using namespace std::chrono_literals;
 using namespace lely;
 
-std::string to_string(const canopen::NmtState& state) {
-  switch (state) {
-    case canopen::NmtState::BOOTUP:
-      return "BOOTUP";
-    case canopen::NmtState::STOP:
-      return "STOP";
-    case canopen::NmtState::START:
-      return "START";
-    case canopen::NmtState::RESET_NODE:
-      return "RESET_NODE";
-    case canopen::NmtState::RESET_COMM:
-      return "RESET_COMM";
-    case canopen::NmtState::PREOP:
-      return "PREOP";
-    case canopen::NmtState::TOGGLE:
-      return "TOGGLE";
-    default:
-      return "UNKNOWN";
-  }
-}
-
 // This driver inherits from FiberDriver, which means that all CANopen event
 // callbacks, such as OnBoot, run as a task inside a "fiber" (or stackful
 // coroutine).
@@ -58,9 +37,7 @@ class MyDriver : public canopen::FiberDriver {
   // The 'st' parameter contains the last known NMT state of the slave
   // (typically pre-operational), 'es' the error code (0 on success), and 'what'
   // a description of the error, if any.
-  void OnBoot(canopen::NmtState nmt_state, char es, const std::string& what) noexcept override {
-    std::cout << "slave " << static_cast<int>(id()) << " state: " << to_string(nmt_state)
-              << std::endl;
+  void OnBoot(canopen::NmtState /*st*/, char es, const std::string& what) noexcept override {
     if (!es || es == 'L') {
       std::cout << "slave " << static_cast<int>(id()) << " booted sucessfully" << std::endl;
     } else {
@@ -69,57 +46,36 @@ class MyDriver : public canopen::FiberDriver {
   }
 
   void OnState(lely::canopen::NmtState nmt_state) noexcept override {
-    std::cout << "slave " << static_cast<int>(id()) << " state: " << to_string(nmt_state)
-              << std::endl;
-  }
+    std::string nmt_state_str;
 
-  // This function gets called during the boot-up process for the slave. The
-  // 'res' parameter is the function that MUST be invoked when the configuration
-  // is complete. Because this function runs as a task inside a coroutine, it
-  // can suspend itself and wait for an asynchronous function, such as an SDO
-  // request, to complete.
-  void OnConfig(std::function<void(std::error_code ec)> res) noexcept override {
-    try {
-      // Perform a few SDO write requests to configure the slave. The
-      // AsyncWrite() function returns a future which becomes ready once the
-      // request completes, and the Wait() function suspends the coroutine for
-      // this task until the future is ready.
-
-      // Configure the slave to monitor the heartbeat of the master (node-ID 1)
-      // with a timeout of 2000 ms.
-      Wait(AsyncWrite<uint32_t>(0x1016, 1, (1 << 16) | 2000));
-      // Configure the slave to produce a heartbeat every 1000 ms.
-      Wait(AsyncWrite<uint16_t>(0x1017, 0, 1000));
-      // Configure the heartbeat consumer on the master.
-      ConfigHeartbeat(2000ms);
-
-      // Reset object 4000:00 and 4001:00 on the slave to 0.
-      Wait(AsyncWrite<uint32_t>(0x4000, 0, 0));
-      Wait(AsyncWrite<uint32_t>(0x4001, 0, 0));
-
-      // Report success (empty error code).
-      res({});
-    } catch (canopen::SdoError& e) {
-      // If one of the SDO requests resulted in an error, abort the
-      // configuration and report the error code.
-      res(e.code());
+    switch (nmt_state) {
+      case canopen::NmtState::BOOTUP:
+        nmt_state_str = "BOOTUP";
+        break;
+      case canopen::NmtState::STOP:
+        nmt_state_str = "STOP";
+        break;
+      case canopen::NmtState::START:
+        nmt_state_str = "START";
+        break;
+      case canopen::NmtState::RESET_NODE:
+        nmt_state_str = "RESET_NODE";
+        break;
+      case canopen::NmtState::RESET_COMM:
+        nmt_state_str = "RESET_COMM";
+        break;
+      case canopen::NmtState::PREOP:
+        nmt_state_str = "PREOP";
+        break;
+      case canopen::NmtState::TOGGLE:
+        nmt_state_str = "TOGGLE";
+        break;
+      default:
+        nmt_state_str = "UNKNOWN";
+        break;
     }
-  }
 
-  // This function is similar to OnConfg(), but it gets called by the
-  // AsyncDeconfig() method of the master.
-  void OnDeconfig(std::function<void(std::error_code ec)> res) noexcept override {
-    try {
-      // Disable the heartbeat consumer on the master.
-      ConfigHeartbeat(0ms);
-      // Disable the heartbeat producer on the slave.
-      Wait(AsyncWrite<uint16_t>(0x1017, 0, 0));
-      // Disable the heartbeat consumer on the slave.
-      Wait(AsyncWrite<uint32_t>(0x1016, 1, 0));
-      res({});
-    } catch (canopen::SdoError& e) {
-      res(e.code());
-    }
+    std::cout << "slave " << static_cast<int>(id()) << " state: " << nmt_state_str << std::endl;
   }
 
   // This function gets called every time a value is written to the local object
@@ -134,9 +90,6 @@ class MyDriver : public canopen::FiberDriver {
       uint32_t val = rpdo_mapped[0x4001][0];
       std::cout << "Received value " << val << " from slave " << static_cast<int>(id())
                 << std::endl;
-      // Increment the value and store it to an object in the local object
-      // dictionary that will be sent by TPDO to object 4000:00 on the slave.
-      tpdo_mapped[0x4000][0] = ++val;
     }
   }
 };

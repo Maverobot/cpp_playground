@@ -1,7 +1,7 @@
 master:
-  node_id: 1
+  node_id: 0x7f
   sync_period: 1000000 # us
 
-slave_2:
+slave:
   dcf: "cpp-slave.eds"
-  node_id: 2
+  node_id: 1
