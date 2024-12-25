@@ -53,3 +53,6 @@ target_link_libraries(master_manual_sync ${LELY_LIBRARIES})
 add_dependencies(master_manual_sync dcfgen-master-config)
 
 add_executable(dcf_parameter_finder dcf_parameter_finder.cpp)
+
+add_executable(sync_byte_provider sync_byte_provider.cpp)
+target_link_libraries(sync_byte_provider PUBLIC ${LELY_LIBRARIES})
