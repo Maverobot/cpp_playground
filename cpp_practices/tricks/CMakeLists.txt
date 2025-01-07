@@ -51,6 +51,9 @@ target_compile_features(bitset_to_int PRIVATE cxx_std_17)
 add_executable(perfect_forwarding src/perfect_forwarding.cpp)
 target_compile_features(perfect_forwarding PRIVATE cxx_std_17)
 
+add_executable(longjmp src/longjmp.cpp)
+add_executable(siglongjmp src/siglongjmp.cpp)
+
 find_package(Eigen3 REQUIRED)
 
 # Download struct_magic if it cannot be found locally
