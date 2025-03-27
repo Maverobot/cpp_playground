@@ -6,6 +6,17 @@
 #include "array.h"
 #include "traits.h"
 
+/**
+ * Expression template for binary operators
+ *
+ * @tparam T the type of the elements
+ * @tparam OP1 the type of the left operand
+ * @tparam OP2 the type of the right operand
+ * @tparam FunctionOP the type of the function operator
+ *
+ * This class uses expression template technique to enable compile-time optimization of binary
+ * operators.
+ */
 template <typename T, typename OP1, typename OP2, typename FunctionOP>
 class BinaryOperator {
  private:
