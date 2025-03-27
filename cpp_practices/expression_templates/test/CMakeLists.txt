@@ -14,7 +14,7 @@ FetchContent_Declare(
   GUnit
   # Specify the commit you depend on and update it regularly.
   GIT_REPOSITORY https://github.com/cpp-testing/GUnit.git
-  GIT_TAG v1.13.0
+  GIT_TAG v1.14.0
   GIT_PROGRESS TRUE
 )
 FetchContent_MakeAvailable(GUnit)
